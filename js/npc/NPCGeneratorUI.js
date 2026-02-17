@@ -1,18 +1,19 @@
 // ─── NPC Generator UI ───────────────────────────────────────────────
+// Main UI controller for the D&D 5e NPC Generator module.
+
 import { el, $, clearChildren, showModal } from '../utils/dom.js';
 import { abilityMod } from '../utils/dice.js';
 import { Storage } from '../utils/storage.js';
 import { NPCGenerator } from './NPCGenerator.js';
-import { RACES, ABILITY_NAMES, ABILITY_LABELS, ABILITY_FULL_NAMES } from '../data/npc-tables.js';
+import { NPC_RACES, NPC_CLASSES, ABILITY_NAMES, ABILITY_LABELS } from '../data/npc-tables.js';
 
-const STORAGE_PREFIX = 'dnd_npc_';
-const STORAGE_LIST_KEY = STORAGE_PREFIX + 'saved_list';
+const STORAGE_KEY = 'dnd_saved_npcs';
 
 export class NPCGeneratorUI {
     constructor(container) {
         this.container = container;
         this.currentNPC = null;
-        this.savedNPCs = this._loadSavedList();
+        this.savedNPCs = Storage.load(STORAGE_KEY, []);
         this.render();
     }
 
@@ -38,6 +39,7 @@ export class NPCGeneratorUI {
         // Right column: saved NPCs sidebar
         const sidebar = el('div', { className: 'npc-sidebar' });
         sidebar.appendChild(this._buildSavedList());
+        sidebar.appendChild(this._buildIOPanel());
         layout.appendChild(sidebar);
 
         this.container.appendChild(layout);
@@ -57,11 +59,23 @@ export class NPCGeneratorUI {
         ]);
         this._raceSelect = el('select', { className: 'select npc-controls__select' });
         this._raceSelect.appendChild(el('option', { value: 'Any', textContent: 'Any Race' }));
-        for (const race of RACES) {
+        for (const race of NPC_RACES) {
             this._raceSelect.appendChild(el('option', { value: race, textContent: race }));
         }
         raceGroup.appendChild(this._raceSelect);
         row.appendChild(raceGroup);
+
+        // Class dropdown
+        const classGroup = el('div', { className: 'form-group' }, [
+            el('label', { className: 'label', textContent: 'Class' }),
+        ]);
+        this._classSelect = el('select', { className: 'select npc-controls__select' });
+        this._classSelect.appendChild(el('option', { value: 'Any', textContent: 'Any Class' }));
+        for (const cls of NPC_CLASSES) {
+            this._classSelect.appendChild(el('option', { value: cls, textContent: cls }));
+        }
+        classGroup.appendChild(this._classSelect);
+        row.appendChild(classGroup);
 
         // Gender dropdown
         const genderGroup = el('div', { className: 'form-group' }, [
@@ -77,9 +91,11 @@ export class NPCGeneratorUI {
         // Generate button
         const generateBtn = el('button', {
             className: 'btn btn--primary npc-controls__generate',
-            textContent: 'Generate NPC',
             onClick: () => this._generate(),
-        });
+        }, [
+            el('span', { className: 'npc-controls__generate-icon', textContent: '\u2694\uFE0F' }),
+            el('span', { textContent: 'Generate NPC' }),
+        ]);
         row.appendChild(generateBtn);
 
         card.appendChild(row);
@@ -108,8 +124,12 @@ export class NPCGeneratorUI {
         );
         headerLeft.appendChild(el('div', { className: 'npc-card__subtitle' }, [
             el('span', { className: 'npc-card__race', textContent: `${npc.race} ${npc.gender}` }),
-            el('span', { className: 'npc-card__age', textContent: npc.ageDescription }),
+            el('span', { className: 'npc-card__separator', textContent: '\u2022' }),
+            el('span', { className: 'npc-card__class', textContent: npc.npcClass || 'Commoner' }),
+            el('span', { className: 'npc-card__separator', textContent: '\u2022' }),
+            el('span', { className: 'npc-card__alignment', textContent: npc.alignment || 'True Neutral' }),
         ]));
+        headerLeft.appendChild(el('div', { className: 'npc-card__age', textContent: npc.ageDescription }));
         header.appendChild(headerLeft);
 
         const headerActions = el('div', { className: 'npc-card__actions' }, [
@@ -120,32 +140,26 @@ export class NPCGeneratorUI {
             }),
             el('button', {
                 className: 'btn btn--sm',
-                textContent: 'Export',
-                onClick: () => this._exportNPC(npc),
+                textContent: 'Copy',
+                onClick: (e) => this._exportNPC(npc, e.target),
             }),
         ]);
         header.appendChild(headerActions);
         card.appendChild(header);
 
-        // Ornamental divider
+        // Identity section
         card.appendChild(el('div', { className: 'npc-card__divider' }));
-
-        // Occupation
-        card.appendChild(this._buildSection(
-            'Occupation',
-            npc.occupation,
-            'occupation',
-            'Re-roll occupation'
-        ));
+        card.appendChild(this._buildIdentitySection(npc));
 
         // Stat block
+        card.appendChild(el('div', { className: 'npc-card__divider' }));
         card.appendChild(this._buildStatBlock(npc));
 
         // Personality section
         card.appendChild(el('div', { className: 'npc-card__divider' }));
         card.appendChild(el('h4', { className: 'npc-card__section-title', textContent: 'Personality' }));
 
-        card.appendChild(this._buildSection('Trait', npc.personalityTrait, 'personality', 'Re-roll trait'));
+        card.appendChild(this._buildSection('Trait', npc.personality || npc.personalityTrait, 'personality', 'Re-roll trait'));
         card.appendChild(this._buildSection('Ideal', npc.ideal, 'ideal', 'Re-roll ideal'));
         card.appendChild(this._buildSection('Bond', npc.bond, 'bond', 'Re-roll bond'));
         card.appendChild(this._buildSection('Flaw', npc.flaw, 'flaw', 'Re-roll flaw'));
@@ -155,10 +169,33 @@ export class NPCGeneratorUI {
         card.appendChild(el('h4', { className: 'npc-card__section-title', textContent: 'Details' }));
 
         card.appendChild(this._buildSection('Backstory', npc.backstory, 'backstory', 'Re-roll backstory'));
+        card.appendChild(this._buildSection('Motivation', npc.motivation || 'Unknown', 'motivation', 'Re-roll motivation'));
         card.appendChild(this._buildSection('Quirk', npc.quirk, 'quirk', 'Re-roll quirk'));
         card.appendChild(this._buildSection('Appearance', npc.appearance, 'appearance', 'Re-roll appearance'));
 
         return card;
+    }
+
+    _buildIdentitySection(npc) {
+        const section = el('div', { className: 'npc-card__identity' });
+
+        const grid = el('div', { className: 'npc-card__identity-grid' });
+        grid.appendChild(this._buildInfoTag('Race', npc.race));
+        grid.appendChild(this._buildInfoTag('Class', npc.npcClass || 'Commoner'));
+        grid.appendChild(this._buildInfoTag('Gender', npc.gender));
+        grid.appendChild(this._buildInfoTag('Alignment', npc.alignment || 'True Neutral'));
+        grid.appendChild(this._buildInfoTag('Age', npc.ageDescription));
+        grid.appendChild(this._buildInfoTag('Occupation', npc.occupation));
+
+        section.appendChild(grid);
+        return section;
+    }
+
+    _buildInfoTag(label, value) {
+        return el('div', { className: 'npc-card__info-tag' }, [
+            el('span', { className: 'npc-card__info-label', textContent: label }),
+            el('span', { className: 'npc-card__info-value', textContent: value }),
+        ]);
     }
 
     _buildSection(label, value, section, tooltip) {
@@ -211,7 +248,7 @@ export class NPCGeneratorUI {
 
         block.appendChild(statsRow);
 
-        // AC & HP bar
+        // AC & HP
         const combat = el('div', { className: 'npc-card__combat-stats' }, [
             el('div', { className: 'npc-combat-stat' }, [
                 el('span', { className: 'npc-combat-stat__label', textContent: 'AC' }),
@@ -260,7 +297,10 @@ export class NPCGeneratorUI {
                     onClick: () => this._viewSavedNPC(npc),
                 }, [
                     el('span', { className: 'npc-saved__item-name', textContent: npc.name }),
-                    el('span', { className: 'npc-saved__item-meta', textContent: `${npc.race} ${npc.occupation}` }),
+                    el('span', {
+                        className: 'npc-saved__item-meta',
+                        textContent: `${npc.race} ${npc.npcClass || npc.occupation || 'Commoner'}`,
+                    }),
                 ]),
                 el('button', {
                     className: 'btn btn--sm btn--danger',
@@ -275,13 +315,101 @@ export class NPCGeneratorUI {
         }
     }
 
+    // ─── Import / Export Panel ────────────────────────────────────
+
+    _buildIOPanel() {
+        const card = el('div', { className: 'card npc-io' });
+        card.appendChild(el('h3', { className: 'card__header', textContent: 'Import / Export' }));
+
+        const row = el('div', { className: 'npc-io__row' });
+
+        row.appendChild(el('button', {
+            className: 'btn btn--sm',
+            textContent: 'Export JSON',
+            onClick: () => this._exportAllNPCs(),
+        }));
+
+        const fileInput = el('input', {
+            type: 'file',
+            accept: '.json',
+        });
+        fileInput.style.display = 'none';
+        fileInput.addEventListener('change', (e) => this._importNPCs(e));
+
+        row.appendChild(el('button', {
+            className: 'btn btn--sm',
+            textContent: 'Import JSON',
+            onClick: () => fileInput.click(),
+        }));
+        row.appendChild(fileInput);
+
+        card.appendChild(row);
+        return card;
+    }
+
+    _exportAllNPCs() {
+        if (this.savedNPCs.length === 0) {
+            this._showToast('No NPCs to export.');
+            return;
+        }
+
+        const blob = new Blob([JSON.stringify(this.savedNPCs, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'dnd-npcs-export.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        this._showToast('NPCs exported!');
+    }
+
+    _importNPCs(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (!Array.isArray(data)) {
+                    this._showToast('Invalid file format.');
+                    return;
+                }
+
+                const existingIds = new Set(this.savedNPCs.map(n => n.id));
+                let added = 0;
+                for (const npc of data) {
+                    if (npc.id && !existingIds.has(npc.id)) {
+                        this.savedNPCs.push(npc);
+                        existingIds.add(npc.id);
+                        added++;
+                    }
+                }
+
+                if (added > 0) {
+                    this._persistSavedList();
+                    this._renderSavedItems();
+                    this._showToast(`Imported ${added} NPC${added > 1 ? 's' : ''}.`);
+                } else {
+                    this._showToast('No new NPCs to import.');
+                }
+            } catch (err) {
+                console.warn('NPC import failed:', err);
+                this._showToast('Import failed. Invalid JSON file.');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
     // ─── Actions ────────────────────────────────────────────────
 
     _generate() {
         const race = this._raceSelect.value;
         const gender = this._genderSelect.value;
+        const npcClass = this._classSelect.value;
 
-        this.currentNPC = NPCGenerator.generate({ race, gender });
+        this.currentNPC = NPCGenerator.generate({ race, gender, npcClass });
         this._refreshCard();
     }
 
@@ -302,10 +430,8 @@ export class NPCGeneratorUI {
     }
 
     _saveNPC(npc) {
-        // Check if already saved
         const existing = this.savedNPCs.find(n => n.id === npc.id);
         if (existing) {
-            // Update existing
             const idx = this.savedNPCs.indexOf(existing);
             this.savedNPCs[idx] = { ...npc };
         } else {
@@ -313,8 +439,6 @@ export class NPCGeneratorUI {
         }
         this._persistSavedList();
         this._renderSavedItems();
-
-        // Show brief confirmation
         this._showToast('NPC saved!');
     }
 
@@ -329,12 +453,13 @@ export class NPCGeneratorUI {
         this._renderSavedItems();
     }
 
-    _exportNPC(npc) {
+    _exportNPC(npc, btnEl) {
         const text = NPCGenerator.toText(npc);
         navigator.clipboard.writeText(text).then(() => {
-            this._showToast('NPC copied to clipboard!');
+            const original = btnEl.textContent;
+            btnEl.textContent = 'Copied!';
+            setTimeout(() => { btnEl.textContent = original; }, 1500);
         }).catch(() => {
-            // Fallback: show in modal
             const pre = el('pre', {
                 className: 'npc-export-text',
                 textContent: text,
@@ -364,11 +489,13 @@ export class NPCGeneratorUI {
 
     // ─── Persistence ────────────────────────────────────────────
 
-    _loadSavedList() {
-        return Storage.load(STORAGE_LIST_KEY, []);
+    _persistSavedList() {
+        Storage.save(STORAGE_KEY, this.savedNPCs);
     }
 
-    _persistSavedList() {
-        Storage.save(STORAGE_LIST_KEY, this.savedNPCs);
+    // ─── Tab Lifecycle ──────────────────────────────────────────
+
+    onTabActivated() {
+        // Nothing special needed on re-activation
     }
 }

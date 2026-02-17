@@ -1,10 +1,16 @@
-/* ─── NPC Generator Layout ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   NPC GENERATOR - Dark Fantasy Theme
+   BEM naming convention. Uses project CSS custom properties from variables.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Layout ─────────────────────────────────────────────────────────── */
 
 .npc-layout {
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: var(--space-lg);
     align-items: start;
+    padding: var(--space-md);
 }
 
 .npc-main {
@@ -19,7 +25,7 @@
     gap: var(--space-md);
 }
 
-/* ─── Controls ────────────────────────────────────────────────────── */
+/* ─── Controls ───────────────────────────────────────────────────────── */
 
 .npc-controls__row {
     display: flex;
@@ -37,9 +43,43 @@
     font-size: 0.9rem;
     letter-spacing: 1.5px;
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
 }
 
-/* ─── Empty State ─────────────────────────────────────────────────── */
+/* Gold glow effect on generate button */
+.npc-controls__generate::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+        135deg,
+        rgba(212, 160, 23, 0.4),
+        rgba(240, 192, 64, 0.6),
+        rgba(212, 160, 23, 0.4)
+    );
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    z-index: -1;
+    filter: blur(8px);
+}
+
+.npc-controls__generate:hover::before {
+    opacity: 1;
+    animation: npcGlowPulse 2s ease-in-out infinite;
+}
+
+.npc-controls__generate-icon {
+    font-size: 1rem;
+}
+
+@keyframes npcGlowPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* ─── Empty State ────────────────────────────────────────────────────── */
 
 .npc-empty {
     display: flex;
@@ -70,7 +110,7 @@
     line-height: 1.6;
 }
 
-/* ─── NPC Card (Parchment Style) ──────────────────────────────────── */
+/* ─── NPC Card (Parchment Style) ─────────────────────────────────────── */
 
 .npc-card {
     position: relative;
@@ -110,7 +150,7 @@
     z-index: 0;
 }
 
-/* Corner ornaments */
+/* Corner ornament border */
 .npc-card::after {
     content: '';
     position: absolute;
@@ -140,7 +180,7 @@
     }
 }
 
-/* ─── Card Header ─────────────────────────────────────────────────── */
+/* ─── Card Header ────────────────────────────────────────────────────── */
 
 .npc-card__header {
     display: flex;
@@ -172,13 +212,20 @@
     flex-wrap: wrap;
 }
 
-.npc-card__race {
+.npc-card__race,
+.npc-card__class,
+.npc-card__alignment {
     font-family: var(--font-display);
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--color-text);
+}
+
+.npc-card__separator {
+    color: var(--color-gold-dim);
+    font-size: 0.6rem;
 }
 
 .npc-card__age {
@@ -194,7 +241,45 @@
     flex-shrink: 0;
 }
 
-/* ─── Card Divider ────────────────────────────────────────────────── */
+/* ─── Identity Grid ──────────────────────────────────────────────────── */
+
+.npc-card__identity {
+    margin: var(--space-sm) 0;
+}
+
+.npc-card__identity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+}
+
+.npc-card__info-tag {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(212, 160, 23, 0.08);
+    border-radius: var(--radius-sm);
+}
+
+.npc-card__info-label {
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-gold-dim);
+}
+
+.npc-card__info-value {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--color-parchment);
+    line-height: 1.3;
+}
+
+/* ─── Card Divider ───────────────────────────────────────────────────── */
 
 .npc-card__divider {
     display: flex;
@@ -212,7 +297,7 @@
     opacity: 0.5;
 }
 
-/* ─── Section Titles ──────────────────────────────────────────────── */
+/* ─── Section Titles ─────────────────────────────────────────────────── */
 
 .npc-card__section-title {
     font-family: var(--font-display);
@@ -224,7 +309,7 @@
     margin-bottom: var(--space-sm);
 }
 
-/* ─── Field Rows (Clickable to Re-roll) ───────────────────────────── */
+/* ─── Field Rows (Clickable to Re-roll) ──────────────────────────────── */
 
 .npc-card__field {
     display: flex;
@@ -274,7 +359,7 @@
     flex: 1;
 }
 
-/* ─── Reroll Indicators ───────────────────────────────────────────── */
+/* ─── Reroll Indicators ──────────────────────────────────────────────── */
 
 .npc-card__reroll-icon {
     font-size: 0.9rem;
@@ -297,7 +382,7 @@
     text-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
 }
 
-/* ─── Stat Block ──────────────────────────────────────────────────── */
+/* ─── Stat Block ─────────────────────────────────────────────────────── */
 
 .npc-card__stat-block {
     position: relative;
@@ -326,6 +411,7 @@
     right: var(--space-sm);
 }
 
+/* Ability score grid: 6 in a row */
 .npc-card__stats-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -364,7 +450,7 @@
     color: var(--color-text-muted);
 }
 
-/* ─── Combat Stats (AC & HP) ──────────────────────────────────────── */
+/* ─── Combat Stats (AC & HP) ─────────────────────────────────────────── */
 
 .npc-card__combat-stats {
     display: flex;
@@ -402,10 +488,10 @@
     text-align: center;
 }
 
-/* ─── Saved NPCs Sidebar ─────────────────────────────────────────── */
+/* ─── Saved NPCs Sidebar ────────────────────────────────────────────── */
 
 .npc-saved {
-    max-height: calc(100vh - 250px);
+    max-height: calc(100vh - 350px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -418,6 +504,25 @@
     flex-direction: column;
     gap: 4px;
     max-height: 500px;
+}
+
+/* Custom scrollbar */
+.npc-saved__list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.npc-saved__list::-webkit-scrollbar-track {
+    background: var(--color-bg-dark);
+    border-radius: 3px;
+}
+
+.npc-saved__list::-webkit-scrollbar-thumb {
+    background: var(--color-gold-dim);
+    border-radius: 3px;
+}
+
+.npc-saved__list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gold);
 }
 
 .npc-saved__empty {
@@ -473,7 +578,18 @@
     text-overflow: ellipsis;
 }
 
-/* ─── Toast Notification ──────────────────────────────────────────── */
+/* ─── Import / Export Panel ──────────────────────────────────────────── */
+
+.npc-io__row {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.npc-io__row .btn {
+    flex: 1;
+}
+
+/* ─── Toast Notification ─────────────────────────────────────────────── */
 
 .npc-toast {
     position: fixed;
@@ -500,7 +616,7 @@
     transform: translateX(-50%) translateY(0);
 }
 
-/* ─── Export Text ──────────────────────────────────────────────────── */
+/* ─── Export Text ─────────────────────────────────────────────────────── */
 
 .npc-export-text {
     font-family: 'Courier New', monospace;
@@ -517,9 +633,9 @@
     user-select: all;
 }
 
-/* ─── Responsive ──────────────────────────────────────────────────── */
+/* ─── Responsive: 768px ──────────────────────────────────────────────── */
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .npc-layout {
         grid-template-columns: 1fr;
     }
@@ -535,9 +651,7 @@
     .npc-saved__list {
         max-height: 200px;
     }
-}
 
-@media (max-width: 768px) {
     .npc-card__header {
         flex-direction: column;
         gap: var(--space-sm);
@@ -549,6 +663,10 @@
 
     .npc-card__stats-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .npc-card__identity-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .npc-controls__row {
@@ -569,7 +687,13 @@
     }
 }
 
+/* ─── Responsive: 480px ──────────────────────────────────────────────── */
+
 @media (max-width: 480px) {
+    .npc-layout {
+        padding: var(--space-sm);
+    }
+
     .npc-card {
         padding: var(--space-md);
     }
@@ -578,9 +702,31 @@
         font-size: 1.3rem;
     }
 
+    .npc-card__subtitle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-xs);
+    }
+
+    .npc-card__separator {
+        display: none;
+    }
+
+    .npc-card__identity-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .npc-card__stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
     .npc-card__combat-stats {
         flex-direction: column;
         align-items: center;
         gap: var(--space-sm);
+    }
+
+    .npc-io__row {
+        flex-direction: column;
     }
 }
