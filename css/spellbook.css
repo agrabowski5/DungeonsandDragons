@@ -166,6 +166,60 @@
     color: var(--color-crimson);
 }
 
+/* ─── Filter Pills ──────────────────────────────────────────────── */
+
+.spellbook__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.spellbook__pills--empty {
+    display: none;
+}
+
+.spellbook__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 3px var(--space-sm) 3px var(--space-md);
+    background: rgba(212, 160, 23, 0.12);
+    border: 1px solid rgba(212, 160, 23, 0.3);
+    border-radius: 20px;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    transition: all var(--transition-base);
+}
+
+.spellbook__pill:hover {
+    background: rgba(212, 160, 23, 0.2);
+    border-color: var(--color-gold);
+}
+
+.spellbook__pill-text {
+    white-space: nowrap;
+}
+
+.spellbook__pill-remove {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 0.65rem;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color var(--transition-base);
+}
+
+.spellbook__pill-remove:hover {
+    color: var(--color-crimson);
+}
+
 /* ─── Count Bar ──────────────────────────────────────────────────── */
 
 .spellbook__count {
@@ -479,7 +533,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 /* Tablet: 2 columns */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .spellbook__grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -487,10 +541,18 @@
     .spellbook__title {
         font-size: 1.8rem;
     }
+
+    .spellbook__dropdown-row {
+        flex-wrap: wrap;
+    }
+
+    .spellbook__filter-group {
+        min-width: calc(50% - var(--space-sm));
+    }
 }
 
 /* Mobile: 1 column */
-@media (max-width: 640px) {
+@media (max-width: 480px) {
     .spellbook__grid {
         grid-template-columns: 1fr;
     }
@@ -532,6 +594,10 @@
 
     .spellbook__fav-chip {
         flex-shrink: 0;
+    }
+
+    .spellbook__pills {
+        gap: var(--space-xs);
     }
 }
 

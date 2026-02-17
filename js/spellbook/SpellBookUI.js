@@ -8,14 +8,14 @@ import { el, $, clearChildren, showModal } from '../utils/dom.js';
 
 /** Map each spell school to its accent color. */
 const SCHOOL_COLORS = {
-    Abjuration:    '#4fc3f7', // cool blue
-    Conjuration:   '#ab47bc', // violet
-    Divination:    '#78909c', // silver-grey
-    Enchantment:   '#ec407a', // rose-pink
-    Evocation:     '#ef5350', // fiery red
-    Illusion:      '#7e57c2', // purple
-    Necromancy:    '#66bb6a', // sickly green
-    Transmutation: '#ffa726', // amber-orange
+    Abjuration:    '#4fc3f7', // blue
+    Conjuration:   '#ffd54f', // amber
+    Divination:    '#ce93d8', // purple
+    Enchantment:   '#f48fb1', // pink
+    Evocation:     '#ef5350', // red
+    Illusion:      '#90caf9', // light blue
+    Necromancy:    '#a5d6a7', // green
+    Transmutation: '#ffab40', // orange
 };
 
 export class SpellBookUI {
@@ -32,6 +32,7 @@ export class SpellBookUI {
         // Element references for partial updates
         this._gridEl = null;
         this._countEl = null;
+        this._pillsEl = null;
         this._favoritesEl = null;
         this._searchInput = null;
 
@@ -50,6 +51,7 @@ export class SpellBookUI {
 
         layout.appendChild(this._buildHeader());
         layout.appendChild(this._buildFilters());
+        layout.appendChild(this._buildFilterPills());
         layout.appendChild(this._buildFavoritesSection());
         layout.appendChild(this._buildCountBar());
         layout.appendChild(this._buildGrid());
@@ -198,6 +200,76 @@ export class SpellBookUI {
         selects.forEach(s => { s.selectedIndex = 0; });
     }
 
+    // ─── Filter pills ──────────────────────────────────────
+
+    _buildFilterPills() {
+        this._pillsEl = el('div', { className: 'spellbook__pills' });
+        return this._pillsEl;
+    }
+
+    _renderFilterPills() {
+        clearChildren(this._pillsEl);
+        if (!this.state.hasActiveFilters()) {
+            this._pillsEl.classList.add('spellbook__pills--empty');
+            return;
+        }
+        this._pillsEl.classList.remove('spellbook__pills--empty');
+
+        if (this.state.searchQuery) {
+            this._pillsEl.appendChild(this._makePill(
+                `Search: "${this.state.searchQuery}"`,
+                () => { this.state.setSearch(''); if (this._searchInput) this._searchInput.value = ''; }
+            ));
+        }
+        if (this.state.filterLevel !== null) {
+            const label = this.state.filterLevel === 0 ? 'Cantrip' : `Level ${this.state.filterLevel}`;
+            this._pillsEl.appendChild(this._makePill(
+                label,
+                () => { this.state.setLevel(null); this._resetSelect('spellbook__filter-level'); }
+            ));
+        }
+        if (this.state.filterSchool !== null) {
+            this._pillsEl.appendChild(this._makePill(
+                this.state.filterSchool,
+                () => { this.state.setSchool(null); this._resetSelect('spellbook__filter-school'); }
+            ));
+        }
+        if (this.state.filterClass !== null) {
+            this._pillsEl.appendChild(this._makePill(
+                this.state.filterClass,
+                () => { this.state.setClass(null); this._resetSelect('spellbook__filter-class'); }
+            ));
+        }
+        if (this.state.filterConcentration !== null) {
+            this._pillsEl.appendChild(this._makePill(
+                `Conc: ${this.state.filterConcentration ? 'Yes' : 'No'}`,
+                () => { this.state.setConcentration(null); this._resetSelect('spellbook__filter-conc'); }
+            ));
+        }
+        if (this.state.filterRitual !== null) {
+            this._pillsEl.appendChild(this._makePill(
+                `Ritual: ${this.state.filterRitual ? 'Yes' : 'No'}`,
+                () => { this.state.setRitual(null); this._resetSelect('spellbook__filter-ritual'); }
+            ));
+        }
+    }
+
+    _makePill(text, onRemove) {
+        return el('span', { className: 'spellbook__pill' }, [
+            el('span', { className: 'spellbook__pill-text', textContent: text }),
+            el('button', {
+                className: 'spellbook__pill-remove',
+                textContent: '\u2715',
+                onClick: (e) => { e.stopPropagation(); onRemove(); },
+            }),
+        ]);
+    }
+
+    _resetSelect(id) {
+        const selectEl = this.container.querySelector(`#${id}`);
+        if (selectEl) selectEl.selectedIndex = 0;
+    }
+
     // ─── Favorites section ──────────────────────────────────
 
     _buildFavoritesSection() {
@@ -273,6 +345,7 @@ export class SpellBookUI {
     _refreshResults() {
         const spells = this.state.getFilteredSpells();
         this._renderCount(spells.length);
+        this._renderFilterPills();
         this._renderFavorites();
         this._renderGrid(spells);
     }
