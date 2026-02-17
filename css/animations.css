@@ -1,0 +1,109 @@
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(212, 160, 23, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(212, 160, 23, 0.4);
+    }
+}
+
+@keyframes shakeRoll {
+    0%, 100% { transform: rotate(0deg); }
+    10% { transform: rotate(-10deg); }
+    20% { transform: rotate(10deg); }
+    30% { transform: rotate(-8deg); }
+    40% { transform: rotate(8deg); }
+    50% { transform: rotate(-5deg); }
+    60% { transform: rotate(5deg); }
+    70% { transform: rotate(-2deg); }
+    80% { transform: rotate(2deg); }
+    90% { transform: rotate(0deg); }
+}
+
+@keyframes spinIn {
+    from {
+        opacity: 0;
+        transform: rotate(-180deg) scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+    }
+}
+
+@keyframes hpDamage {
+    0%, 100% { background-color: inherit; }
+    50% { background-color: rgba(220, 20, 60, 0.3); }
+}
+
+@keyframes hpHeal {
+    0%, 100% { background-color: inherit; }
+    50% { background-color: rgba(76, 175, 80, 0.3); }
+}
+
+@keyframes turnPulse {
+    0%, 100% {
+        border-color: var(--color-gold);
+        box-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
+    }
+    50% {
+        border-color: var(--color-gold-light);
+        box-shadow: 0 0 16px rgba(212, 160, 23, 0.6);
+    }
+}
+
+/* Utility classes */
+.animate-fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.3s ease;
+}
+
+.animate-shake {
+    animation: shakeRoll 0.5s ease;
+}
+
+.animate-pulse {
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-damage {
+    animation: hpDamage 0.4s ease;
+}
+
+.animate-heal {
+    animation: hpHeal 0.4s ease;
+}
+
+.animate-turn {
+    animation: turnPulse 2s ease-in-out infinite;
+}

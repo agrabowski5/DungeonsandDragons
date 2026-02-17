@@ -1,0 +1,180 @@
+/* Map Builder Layout */
+.map-builder-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    height: calc(100vh - 250px);
+    min-height: 500px;
+}
+
+/* Toolbar */
+.map-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-bg-panel);
+    border: var(--border-subtle);
+    border-radius: var(--radius-md);
+    align-items: flex-start;
+}
+
+.toolbar-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.toolbar-section__title {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--color-gold-dim);
+}
+
+.toolbar-tools {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.toolbar-tool-btn {
+    min-width: 60px;
+}
+
+/* Terrain Palette */
+.terrain-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.terrain-swatch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--color-bg-input);
+    border: 1px solid rgba(212, 160, 23, 0.15);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 0.75rem;
+    color: var(--color-text);
+}
+
+.terrain-swatch:hover {
+    border-color: var(--color-gold-dim);
+    background: rgba(212, 160, 23, 0.08);
+}
+
+.terrain-swatch--active {
+    border-color: var(--color-gold);
+    background: rgba(212, 160, 23, 0.15);
+    box-shadow: 0 0 6px rgba(212, 160, 23, 0.3);
+}
+
+.terrain-swatch__color {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.terrain-swatch__label {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Token Config Section */
+.toolbar-token-section .form-row {
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.toolbar-token-section .label {
+    margin-bottom: 0;
+    min-width: 35px;
+}
+
+/* Zoom Controls */
+.toolbar-zoom-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    min-width: 40px;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+/* Action Buttons */
+.toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* Canvas Container */
+.map-canvas-container {
+    flex: 1;
+    border: var(--border-ornate);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #111;
+    position: relative;
+    min-height: 300px;
+}
+
+.map-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* Save/Load List */
+.save-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.save-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--color-bg-input);
+    border-radius: var(--radius-sm);
+}
+
+.save-list__name {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--color-parchment);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .map-toolbar {
+        flex-direction: column;
+    }
+
+    .map-builder-layout {
+        height: auto;
+        min-height: auto;
+    }
+
+    .map-canvas-container {
+        height: 400px;
+    }
+}

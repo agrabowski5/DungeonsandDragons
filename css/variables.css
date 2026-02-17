@@ -1,0 +1,59 @@
+:root {
+    /* Background colors */
+    --color-bg-dark: #1a1a2e;
+    --color-bg-panel: #16213e;
+    --color-bg-card: #0f3460;
+    --color-bg-input: #0d1b3e;
+    --color-bg-overlay: rgba(10, 10, 20, 0.85);
+
+    /* Accent colors */
+    --color-gold: #d4a017;
+    --color-gold-light: #f0c040;
+    --color-gold-dim: #9a7209;
+    --color-amber: #e6a23c;
+    --color-parchment: #f4e4c1;
+    --color-blood-red: #8b0000;
+    --color-crimson: #dc143c;
+
+    /* Difficulty colors */
+    --color-easy: #4caf50;
+    --color-medium: #f0c040;
+    --color-hard: #e67e22;
+    --color-deadly: #dc143c;
+    --color-trivial: #78909c;
+
+    /* Text colors */
+    --color-text: #e8d5b7;
+    --color-text-bright: #fff5e1;
+    --color-text-muted: #9a8866;
+    --color-text-dark: #1a1a2e;
+
+    /* Fonts */
+    --font-heading: 'MedievalSharp', cursive;
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Crimson Text', serif;
+
+    /* Borders & Shadows */
+    --border-ornate: 2px solid var(--color-gold);
+    --border-subtle: 1px solid rgba(212, 160, 23, 0.3);
+    --shadow-glow: 0 0 10px rgba(212, 160, 23, 0.3);
+    --shadow-glow-strong: 0 0 20px rgba(212, 160, 23, 0.5);
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+
+    /* Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    /* Transitions */
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.4s ease;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+}
