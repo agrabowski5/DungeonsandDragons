@@ -2,6 +2,7 @@ import { $, $$ } from './utils/dom.js';
 import { Storage } from './utils/storage.js';
 import { MapController } from './map-builder/MapController.js';
 import { EncounterUI } from './encounter/EncounterUI.js';
+import { OnboardingManager } from './onboarding/OnboardingManager.js';
 
 const ACTIVE_TAB_KEY = 'dnd_active_tab';
 
@@ -9,12 +10,26 @@ class App {
     constructor() {
         this.tabs = $$('.tab-nav__btn');
         this.panels = $$('.tab-panel');
-        this.mapController = null;
-        this.encounterUI = null;
+        this.modules = {};
+        this.onboarding = new OnboardingManager();
 
         this._bindTabs();
+        this._bindHelp();
         this._restoreTab();
-        this._initModules();
+
+        // Start onboarding for first-time visitors (slight delay for DOM)
+        setTimeout(() => this.onboarding.start(), 500);
+    }
+
+    _bindHelp() {
+        const helpBtn = $('#help-btn');
+        if (helpBtn) {
+            helpBtn.addEventListener('click', () => {
+                OnboardingManager.reset();
+                this.onboarding = new OnboardingManager();
+                this.onboarding.start();
+            });
+        }
     }
 
     _bindTabs() {
@@ -37,10 +52,7 @@ class App {
         }
 
         Storage.save(ACTIVE_TAB_KEY, tabId);
-
-        if (tabId === 'map-builder' && this.mapController) {
-            this.mapController.onTabActivated();
-        }
+        this._ensureModule(tabId);
     }
 
     _restoreTab() {
@@ -48,16 +60,59 @@ class App {
         this._switchTab(saved);
     }
 
-    _initModules() {
-        const mapPanel = $('#map-builder');
-        const encounterPanel = $('#encounter-creator');
-
-        if (mapPanel) {
-            this.mapController = new MapController(mapPanel);
+    async _ensureModule(tabId) {
+        if (this.modules[tabId]) {
+            if (this.modules[tabId].onTabActivated) {
+                this.modules[tabId].onTabActivated();
+            }
+            return;
         }
 
-        if (encounterPanel) {
-            this.encounterUI = new EncounterUI(encounterPanel);
+        const panel = document.getElementById(tabId);
+        if (!panel) return;
+
+        try {
+            switch (tabId) {
+                case 'map-builder':
+                    this.modules[tabId] = new MapController(panel);
+                    break;
+                case 'encounter-creator':
+                    this.modules[tabId] = new EncounterUI(panel);
+                    break;
+                case 'character-sheets': {
+                    const { CharacterSheetUI } = await import('./character/CharacterSheetUI.js');
+                    this.modules[tabId] = new CharacterSheetUI(panel);
+                    break;
+                }
+                case 'spell-book': {
+                    const { SpellBookUI } = await import('./spellbook/SpellBookUI.js');
+                    this.modules[tabId] = new SpellBookUI(panel);
+                    break;
+                }
+                case 'dice-roller': {
+                    const { DiceRollerUI } = await import('./dice-roller/DiceRollerUI.js');
+                    this.modules[tabId] = new DiceRollerUI(panel);
+                    break;
+                }
+                case 'loot-generator': {
+                    const { LootGeneratorUI } = await import('./loot/LootGeneratorUI.js');
+                    this.modules[tabId] = new LootGeneratorUI(panel);
+                    break;
+                }
+                case 'npc-generator': {
+                    const { NPCGeneratorUI } = await import('./npc/NPCGeneratorUI.js');
+                    this.modules[tabId] = new NPCGeneratorUI(panel);
+                    break;
+                }
+                case 'session-notes': {
+                    const { SessionNotesUI } = await import('./notes/SessionNotesUI.js');
+                    this.modules[tabId] = new SessionNotesUI(panel);
+                    break;
+                }
+            }
+        } catch (err) {
+            console.error(`Failed to load module for ${tabId}:`, err);
+            panel.innerHTML = '<div class="card"><h3 class="card__header">Loading Error</h3><p>Failed to load this module. Please refresh the page.</p></div>';
         }
     }
 }

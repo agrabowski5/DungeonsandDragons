@@ -3,5 +3,8 @@ Thumbs.db
 *.log
 .vscode/
 node_modules/
+dist/
 .env
+.env.local
+.env.*.local
 *.tmp

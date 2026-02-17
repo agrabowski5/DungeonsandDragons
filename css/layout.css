@@ -2,10 +2,8 @@
 .app-header {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: var(--space-md);
-    padding: var(--space-lg) var(--space-xl);
-    text-align: center;
+    padding: var(--space-md) var(--space-xl);
     border-bottom: var(--border-ornate);
     background: linear-gradient(180deg, rgba(15, 52, 96, 0.3) 0%, transparent 100%);
 }
@@ -22,42 +20,66 @@
 
 .app-header__text {
     text-align: left;
+    flex: 1;
+    min-width: 0;
 }
 
 .app-header__title {
-    font-size: 2rem;
+    font-size: 1.6rem;
     text-shadow: 0 0 20px rgba(212, 160, 23, 0.4);
     letter-spacing: 2px;
 }
 
 .app-header__subtitle {
     font-family: var(--font-display);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--color-text-muted);
     letter-spacing: 3px;
     text-transform: uppercase;
     margin-top: 2px;
 }
 
-/* Tab Navigation */
+.app-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.help-btn {
+    font-family: var(--font-display);
+    font-weight: 700;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+}
+
+/* Tab Navigation - scrollable for 8 tabs */
 .tab-nav {
     display: flex;
-    justify-content: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-xl);
+    gap: 2px;
+    padding: var(--space-xs) var(--space-md);
     background: rgba(15, 52, 96, 0.15);
     border-bottom: var(--border-subtle);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tab-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .tab-nav__btn {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg);
+    gap: 6px;
+    padding: var(--space-sm) var(--space-md);
     font-family: var(--font-display);
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--color-text-muted);
     background: transparent;
@@ -65,6 +87,8 @@
     border-radius: var(--radius-md) var(--radius-md) 0 0;
     transition: all var(--transition-base);
     position: relative;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .tab-nav__btn::after {
@@ -99,6 +123,7 @@
 .tab-nav__btn svg {
     opacity: 0.6;
     transition: opacity var(--transition-base);
+    flex-shrink: 0;
 }
 
 .tab-nav__btn.active svg,
@@ -109,7 +134,7 @@
 /* Main Content */
 .app-main {
     flex: 1;
-    min-height: calc(100vh - 200px);
+    min-height: calc(100vh - 180px);
     padding: var(--space-lg);
 }
 
@@ -125,38 +150,67 @@
 /* Footer */
 .app-footer {
     text-align: center;
-    padding: var(--space-md) var(--space-xl);
+    padding: var(--space-sm) var(--space-xl);
     font-family: var(--font-display);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--color-text-muted);
     letter-spacing: 2px;
     text-transform: uppercase;
     border-top: var(--border-subtle);
-    opacity: 0.6;
+    opacity: 0.5;
 }
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.toast {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-panel);
+    border: 1px solid var(--color-gold-dim);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    box-shadow: var(--shadow-card);
+    animation: slideIn 0.3s ease;
+    max-width: 300px;
+}
+
+.toast--success { border-color: var(--color-easy); }
+.toast--error { border-color: var(--color-deadly); }
 
 /* Responsive */
 @media (max-width: 768px) {
     .app-header {
-        flex-direction: column;
-        padding: var(--space-md);
-    }
-
-    .app-header__text {
-        text-align: center;
+        padding: var(--space-sm) var(--space-md);
     }
 
     .app-header__title {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
+    }
+
+    .app-header__subtitle {
+        display: none;
     }
 
     .tab-nav {
-        padding: var(--space-sm);
+        padding: var(--space-xs);
     }
 
     .tab-nav__btn {
-        font-size: 0.75rem;
-        padding: var(--space-sm) var(--space-md);
+        font-size: 0.65rem;
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .tab-nav__btn span {
+        display: none;
     }
 
     .app-main {
@@ -166,17 +220,11 @@
 
 @media (max-width: 480px) {
     .app-header__title {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
 
-    .app-header__subtitle {
-        font-size: 0.7rem;
-    }
-
-    .tab-nav__btn {
-        flex-direction: column;
-        gap: 2px;
-        font-size: 0.65rem;
-        padding: var(--space-sm);
+    .app-header__logo .d20-icon {
+        width: 32px;
+        height: 32px;
     }
 }

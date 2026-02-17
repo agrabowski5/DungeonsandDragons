@@ -1,0 +1,728 @@
+/* =================================================================
+   CHARACTER SHEET - Dark Fantasy Theme
+   BEM naming: .charsheet  / .charsheet__*  / .charsheet--*
+   ================================================================= */
+
+/* ------------------------------------------------------------------ */
+/*  TOP-LEVEL LAYOUT                                                   */
+/* ------------------------------------------------------------------ */
+
+.charsheet {
+    display: flex;
+    gap: 0;
+    min-height: calc(100vh - 180px);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SIDEBAR                                                            */
+/* ------------------------------------------------------------------ */
+
+.charsheet__sidebar {
+    width: 250px;
+    min-width: 250px;
+    background: var(--color-bg-panel);
+    border-right: var(--border-ornate);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.charsheet__sidebar-header {
+    padding: var(--space-md);
+    border-bottom: var(--border-subtle);
+}
+
+.charsheet__sidebar-title {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--color-gold);
+    margin: 0;
+}
+
+.charsheet__sidebar-actions {
+    padding: var(--space-sm) var(--space-md);
+    border-top: var(--border-subtle);
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: auto;
+}
+
+.charsheet__sidebar-actions .btn {
+    flex: 1;
+}
+
+/* Character list */
+.charsheet__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-xs) 0;
+}
+
+.charsheet__list-empty {
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.charsheet__list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    transition: background var(--transition-base), border-color var(--transition-base);
+    border-left: 3px solid transparent;
+}
+
+.charsheet__list-item:hover {
+    background: rgba(212, 160, 23, 0.06);
+    border-left-color: rgba(212, 160, 23, 0.3);
+}
+
+.charsheet__list-item--active {
+    background: rgba(212, 160, 23, 0.1);
+    border-left-color: var(--color-gold);
+}
+
+.charsheet__list-name {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+}
+
+.charsheet__list-item--active .charsheet__list-name {
+    color: var(--color-gold-light);
+}
+
+.charsheet__list-delete {
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    margin-left: var(--space-xs);
+    flex-shrink: 0;
+}
+
+.charsheet__list-item:hover .charsheet__list-delete {
+    opacity: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/*  SHEET (RIGHT SIDE)                                                 */
+/* ------------------------------------------------------------------ */
+
+.charsheet__sheet {
+    flex: 1;
+    padding: var(--space-lg);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.charsheet__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 300px;
+}
+
+.charsheet__empty-text {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    letter-spacing: 1px;
+}
+
+/* Toolbar */
+.charsheet__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: Generic card section                                      */
+/* ------------------------------------------------------------------ */
+
+.charsheet__section {
+    /* Inherits .card from components.css */
+}
+
+.charsheet__sub-header {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--color-gold);
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid rgba(212, 160, 23, 0.15);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: IDENTITY                                                  */
+/* ------------------------------------------------------------------ */
+
+.charsheet__identity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-md);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: ABILITIES + SKILLS (3-column)                             */
+/* ------------------------------------------------------------------ */
+
+.charsheet__abilities-skills {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: var(--space-lg);
+}
+
+/* Abilities card */
+.charsheet__abilities-card {
+    min-width: 180px;
+}
+
+.charsheet__ability-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) 0;
+}
+
+.charsheet__ability-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    width: 36px;
+    flex-shrink: 0;
+}
+
+.charsheet__ability-input {
+    width: 56px !important;
+    text-align: center;
+}
+
+.charsheet__ability-mod {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-bright);
+    min-width: 36px;
+    text-align: center;
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 2px var(--space-xs);
+}
+
+.charsheet__proficiency-display {
+    margin-top: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.charsheet__proficiency-value {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-gold-light);
+}
+
+/* Saving throws card */
+.charsheet__saves-card {
+    min-width: 160px;
+}
+
+.charsheet__save-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) 0;
+}
+
+.charsheet__save-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    width: 36px;
+    flex-shrink: 0;
+}
+
+.charsheet__save-mod {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text);
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Skills card */
+.charsheet__skills-card {
+    min-width: 250px;
+}
+
+.charsheet__skill-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 2px 0;
+    transition: background var(--transition-base);
+    border-radius: var(--radius-sm);
+    padding-left: var(--space-xs);
+    padding-right: var(--space-xs);
+}
+
+.charsheet__skill-row:hover {
+    background: rgba(212, 160, 23, 0.05);
+}
+
+.charsheet__skill-mod {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-text);
+    min-width: 28px;
+    text-align: center;
+}
+
+.charsheet__skill-name {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    flex: 1;
+}
+
+.charsheet__skill-ability {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.charsheet__passive-perception {
+    margin-top: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.charsheet__passive-value {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-gold-light);
+}
+
+/* Proficiency checkboxes */
+.charsheet__prof-check {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-gold-dim);
+    border-radius: 50%;
+    background: var(--color-bg-input);
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-base);
+    flex-shrink: 0;
+}
+
+.charsheet__prof-check:checked {
+    background: var(--color-gold);
+    border-color: var(--color-gold-light);
+    box-shadow: 0 0 6px rgba(212, 160, 23, 0.4);
+}
+
+.charsheet__prof-check:checked::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: var(--color-bg-dark);
+    border-radius: 50%;
+}
+
+.charsheet__prof-check:hover {
+    border-color: var(--color-gold);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: COMBAT                                                    */
+/* ------------------------------------------------------------------ */
+
+.charsheet__combat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-md);
+    align-items: start;
+}
+
+.charsheet__hp-group {
+    grid-column: span 2;
+}
+
+.charsheet__hp-group .hp-bar {
+    margin-bottom: var(--space-sm);
+}
+
+.charsheet__computed-value {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-gold-light);
+    text-align: center;
+    display: block;
+    padding: var(--space-xs) 0;
+}
+
+.charsheet__mini-field {
+    min-width: 60px;
+}
+
+.charsheet__mini-field .label {
+    font-size: 0.6rem;
+    letter-spacing: 0.5px;
+}
+
+.charsheet__mini-field .input {
+    width: 64px;
+    text-align: center;
+}
+
+/* Death saves */
+.charsheet__death-saves {
+    grid-column: span 2;
+}
+
+.charsheet__death-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+}
+
+.charsheet__death-label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-easy);
+    min-width: 72px;
+}
+
+.charsheet__death-label--fail {
+    color: var(--color-crimson);
+}
+
+.charsheet__death-checks {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.charsheet__death-check {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(212, 160, 23, 0.3);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-input);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.charsheet__death-check:checked {
+    border-color: var(--color-gold);
+}
+
+.charsheet__death-check--successes:checked {
+    background: var(--color-easy);
+    border-color: var(--color-easy);
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
+}
+
+.charsheet__death-check--failures:checked {
+    background: var(--color-crimson);
+    border-color: var(--color-crimson);
+    box-shadow: 0 0 6px rgba(220, 20, 60, 0.4);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: FEATURES & TRAITS                                         */
+/* ------------------------------------------------------------------ */
+
+.charsheet__features-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.charsheet__feature-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-sm);
+}
+
+.charsheet__feature-name {
+    font-weight: 700;
+}
+
+.charsheet__feature-desc {
+    grid-column: 1 / -1;
+    resize: vertical;
+    min-height: 40px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: INVENTORY & CURRENCY                                      */
+/* ------------------------------------------------------------------ */
+
+.charsheet__currency-section {
+    margin-bottom: var(--space-md);
+}
+
+.charsheet__currency-row {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.charsheet__currency-row .charsheet__mini-field .label {
+    color: var(--color-gold);
+}
+
+.charsheet__inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: var(--space-sm);
+}
+
+.charsheet__inv-table th {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-muted);
+    text-align: left;
+    padding: var(--space-xs) var(--space-sm);
+    border-bottom: var(--border-subtle);
+}
+
+.charsheet__inv-table td {
+    padding: var(--space-xs) var(--space-sm);
+    border-bottom: 1px solid rgba(212, 160, 23, 0.08);
+    vertical-align: middle;
+}
+
+.charsheet__inv-table tr:hover td {
+    background: rgba(212, 160, 23, 0.03);
+}
+
+.charsheet__inv-table .input--sm {
+    width: 100%;
+    min-width: 50px;
+}
+
+.charsheet__inv-table td:nth-child(2) .input--sm,
+.charsheet__inv-table td:nth-child(3) .input--sm {
+    width: 60px;
+}
+
+.charsheet__inv-table td:nth-child(4) {
+    text-align: center;
+}
+
+.charsheet__inv-table td:last-child {
+    text-align: center;
+    width: 40px;
+}
+
+.charsheet__weight-total {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.5px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: SPELLCASTING                                              */
+/* ------------------------------------------------------------------ */
+
+.charsheet__spell-header {
+    display: flex;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.charsheet__spell-header .form-group {
+    min-width: 120px;
+}
+
+.charsheet__slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.charsheet__slot-group {
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm);
+}
+
+.charsheet__slot-level {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-gold);
+    display: block;
+    margin-bottom: var(--space-xs);
+}
+
+/* ------------------------------------------------------------------ */
+/*  SECTION: NOTES                                                     */
+/* ------------------------------------------------------------------ */
+
+.charsheet__notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-md);
+}
+
+.charsheet__textarea {
+    resize: vertical;
+    min-height: 60px;
+    font-family: var(--font-body);
+    line-height: 1.5;
+}
+
+/* Make backstory span full width */
+.charsheet__notes-grid .form-group:last-child {
+    grid-column: 1 / -1;
+}
+
+/* ------------------------------------------------------------------ */
+/*  RESPONSIVE                                                         */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 1024px) {
+    .charsheet__abilities-skills {
+        grid-template-columns: auto 1fr;
+    }
+
+    .charsheet__saves-card {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .charsheet__skills-card {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .charsheet {
+        flex-direction: column;
+    }
+
+    .charsheet__sidebar {
+        width: 100%;
+        min-width: unset;
+        max-height: 200px;
+        border-right: none;
+        border-bottom: var(--border-ornate);
+    }
+
+    .charsheet__sheet {
+        padding: var(--space-md);
+    }
+
+    .charsheet__abilities-skills {
+        grid-template-columns: 1fr;
+    }
+
+    .charsheet__saves-card,
+    .charsheet__skills-card {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    .charsheet__combat-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .charsheet__hp-group,
+    .charsheet__death-saves {
+        grid-column: 1 / -1;
+    }
+
+    .charsheet__identity-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .charsheet__notes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charsheet__spell-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .charsheet__slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .charsheet__identity-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charsheet__combat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charsheet__hp-group,
+    .charsheet__death-saves {
+        grid-column: 1;
+    }
+
+    .charsheet__slots-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}

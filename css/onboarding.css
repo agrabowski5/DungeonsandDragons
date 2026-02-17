@@ -1,0 +1,163 @@
+/* ==========================================================================
+   ONBOARDING
+   Spotlight walkthrough overlay for first-time visitors.
+   ========================================================================== */
+
+/* ---- Overlay ------------------------------------------------------------- */
+
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(0, 0, 0, 0.75);
+    animation: fadeIn 0.4s ease;
+}
+
+/* ---- Spotlight ----------------------------------------------------------- */
+
+.onboarding-spotlight {
+    position: fixed;
+    border-radius: var(--radius-md);
+    box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.75),
+        0 0 20px rgba(212, 160, 23, 0.4);
+    border: 2px solid var(--color-gold);
+    z-index: 9001;
+    pointer-events: none;
+    transition: all 0.4s ease;
+    animation: spotlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes spotlightPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 9999px rgba(0, 0, 0, 0.75),
+            0 0 20px rgba(212, 160, 23, 0.4);
+    }
+    50% {
+        box-shadow:
+            0 0 0 9999px rgba(0, 0, 0, 0.75),
+            0 0 35px rgba(212, 160, 23, 0.6);
+    }
+}
+
+/* ---- Tooltip ------------------------------------------------------------- */
+
+.onboarding-tooltip {
+    position: fixed;
+    z-index: 9002;
+    max-width: 400px;
+    min-width: 280px;
+    padding: var(--space-lg);
+    background: var(--color-bg-panel);
+    border: var(--border-ornate);
+    border-radius: var(--radius-lg);
+    box-shadow:
+        var(--shadow-card),
+        0 0 30px rgba(212, 160, 23, 0.2);
+    animation: tooltipAppear 0.4s ease;
+}
+
+@keyframes tooltipAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Arrow for bottom-positioned tooltips */
+.onboarding-tooltip--bottom::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    width: 16px;
+    height: 16px;
+    background: var(--color-bg-panel);
+    border-left: 1px solid var(--color-gold-dim);
+    border-top: 1px solid var(--color-gold-dim);
+    transform: rotate(45deg);
+}
+
+/* Center-positioned tooltips */
+.onboarding-tooltip--center {
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.onboarding-tooltip--center::before {
+    display: none;
+}
+
+/* ---- Tooltip Content ----------------------------------------------------- */
+
+.onboarding-tooltip__step {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    margin-bottom: var(--space-sm);
+}
+
+.onboarding-tooltip__title {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--color-gold-light);
+    margin: 0 0 var(--space-sm) 0;
+    text-shadow: 0 0 15px rgba(212, 160, 23, 0.3);
+}
+
+.onboarding-tooltip__message {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    margin: 0 0 var(--space-md) 0;
+}
+
+/* ---- Actions ------------------------------------------------------------- */
+
+.onboarding-tooltip__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(212, 160, 23, 0.15);
+}
+
+.onboarding-tooltip__actions .btn--primary {
+    min-width: 100px;
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 480px) {
+    .onboarding-tooltip {
+        max-width: calc(100vw - 32px);
+        min-width: unset;
+        margin: 0 var(--space-md);
+    }
+
+    .onboarding-tooltip--bottom {
+        left: 0 !important;
+        right: 0;
+        margin: 0 var(--space-md);
+    }
+
+    .onboarding-tooltip__title {
+        font-size: 1.1rem;
+    }
+
+    .onboarding-tooltip__message {
+        font-size: 0.85rem;
+    }
+}
