@@ -16,17 +16,47 @@ body {
     line-height: 1.6;
     color: var(--color-text);
     background: var(--color-bg-dark);
+    /* Layered dark atmosphere: stone texture + color gradients + vignette */
     background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(15, 52, 96, 0.4) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(22, 33, 62, 0.6) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 100%, rgba(139, 0, 0, 0.08) 0%, transparent 40%);
+        /* Subtle stone texture via noise pattern */
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
+        /* Deep atmospheric gradients */
+        radial-gradient(ellipse at 15% 30%, rgba(123, 94, 167, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 20%, rgba(15, 52, 96, 0.15) 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 80%, rgba(139, 0, 0, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(20, 20, 35, 1) 0%, rgba(10, 10, 20, 1) 100%);
     overflow-x: hidden;
 }
 
+/* Vignette overlay */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Top gold decorative border */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--color-gold-dim), var(--color-gold), var(--color-gold-dim), transparent);
+    z-index: 10000;
+    box-shadow: 0 2px 12px rgba(212, 160, 23, 0.3);
+}
+
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     color: var(--color-gold);
     line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 h1 { font-size: 2.2rem; }
@@ -42,6 +72,7 @@ a {
 
 a:hover {
     color: var(--color-parchment);
+    text-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
 }
 
 img, svg {
@@ -70,23 +101,38 @@ button {
     color: var(--color-text-bright);
 }
 
+/* Ornamental horizontal rule */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-gold-dim), var(--color-gold), var(--color-gold-dim), transparent);
+    margin: var(--space-lg) 0;
+    opacity: 0.6;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
 }
 
 ::-webkit-scrollbar-track {
     background: var(--color-bg-dark);
+    border-left: 1px solid rgba(212, 160, 23, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--color-gold-dim);
-    border-radius: 4px;
+    background: linear-gradient(180deg, var(--color-gold-dark), var(--color-gold-dim));
+    border-radius: 5px;
+    border: 2px solid var(--color-bg-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-gold);
+    background: linear-gradient(180deg, var(--color-gold-dim), var(--color-gold));
+}
+
+::-webkit-scrollbar-corner {
+    background: var(--color-bg-dark);
 }
 
 /* Firefox scrollbar */

@@ -1,56 +1,66 @@
 :root {
-    /* Background colors */
-    --color-bg-dark: #1a1a2e;
-    --color-bg-panel: #16213e;
-    --color-bg-card: #0f3460;
-    --color-bg-input: #0d1b3e;
-    --color-bg-overlay: rgba(10, 10, 20, 0.85);
+    /* === Deep Dungeon Backgrounds === */
+    --color-bg-dark: #0a0a14;
+    --color-bg-panel: #12121f;
+    --color-bg-card: #1a1a2e;
+    --color-bg-input: #0e0e1a;
+    --color-bg-overlay: rgba(5, 5, 10, 0.92);
+    --color-bg-surface: #151525;
 
-    /* Accent colors */
+    /* === Gold & Accent Palette === */
     --color-gold: #d4a017;
     --color-gold-light: #f0c040;
-    --color-gold-dim: #9a7209;
+    --color-gold-dim: #8b6914;
+    --color-gold-dark: #5c4510;
     --color-amber: #e6a23c;
     --color-parchment: #f4e4c1;
+    --color-parchment-dark: #c9b896;
     --color-blood-red: #8b0000;
     --color-crimson: #dc143c;
+    --color-arcane: #7b5ea7;
+    --color-emerald: #2d7d46;
+    --color-frost: #4a9ead;
 
-    /* Difficulty colors */
+    /* === Difficulty Colors === */
     --color-easy: #4caf50;
     --color-medium: #f0c040;
     --color-hard: #e67e22;
     --color-deadly: #dc143c;
     --color-trivial: #78909c;
 
-    /* Text colors */
-    --color-text: #e8d5b7;
-    --color-text-bright: #fff5e1;
-    --color-text-muted: #9a8866;
-    --color-text-dark: #1a1a2e;
+    /* === Text Colors === */
+    --color-text: #d4c5a9;
+    --color-text-bright: #f5edd6;
+    --color-text-muted: #7a6f5a;
+    --color-text-dark: #0a0a14;
 
-    /* Fonts */
+    /* === Fonts === */
     --font-heading: 'MedievalSharp', cursive;
     --font-display: 'Cinzel', serif;
     --font-body: 'Crimson Text', serif;
 
-    /* Borders & Shadows */
+    /* === Ornate Borders & Shadows === */
     --border-ornate: 2px solid var(--color-gold);
-    --border-subtle: 1px solid rgba(212, 160, 23, 0.3);
-    --shadow-glow: 0 0 10px rgba(212, 160, 23, 0.3);
-    --shadow-glow-strong: 0 0 20px rgba(212, 160, 23, 0.5);
-    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    --border-subtle: 1px solid rgba(212, 160, 23, 0.2);
+    --border-inlay: 1px solid rgba(212, 160, 23, 0.12);
+    --border-glow: 1px solid rgba(212, 160, 23, 0.4);
+    --shadow-glow: 0 0 12px rgba(212, 160, 23, 0.25);
+    --shadow-glow-strong: 0 0 24px rgba(212, 160, 23, 0.45), 0 0 48px rgba(212, 160, 23, 0.15);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-deep: 0 8px 32px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
+    --shadow-inset: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+    --shadow-inset-deep: inset 0 3px 10px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(0, 0, 0, 0.4);
 
-    /* Radius */
+    /* === Radius === */
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
 
-    /* Transitions */
+    /* === Transitions === */
     --transition-base: 0.2s ease;
     --transition-slow: 0.4s ease;
 
-    /* Spacing */
+    /* === Spacing === */
     --space-xs: 4px;
     --space-sm: 8px;
     --space-md: 16px;

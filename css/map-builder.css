@@ -1,4 +1,4 @@
-/* Map Builder Layout */
+/* ========== MAP BUILDER LAYOUT ========== */
 .map-builder-layout {
     display: flex;
     flex-direction: column;
@@ -7,31 +7,53 @@
     min-height: 500px;
 }
 
-/* Toolbar */
+/* ========== TOOLBAR ========== */
 .map-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-md);
     padding: var(--space-md);
-    background: var(--color-bg-panel);
-    border: var(--border-subtle);
+    background: linear-gradient(180deg, var(--color-bg-card), var(--color-bg-panel));
+    border: 1px solid rgba(212, 160, 23, 0.2);
     border-radius: var(--radius-md);
     align-items: flex-start;
+    box-shadow: var(--shadow-card);
+    position: relative;
+}
+
+/* Toolbar top accent */
+.map-toolbar::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 10px;
+    right: 10px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-gold-dim), transparent);
+    border-radius: 2px;
 }
 
 .toolbar-section {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
+    padding-right: var(--space-md);
+    border-right: 1px solid rgba(212, 160, 23, 0.08);
+}
+
+.toolbar-section:last-child {
+    border-right: none;
+    padding-right: 0;
 }
 
 .toolbar-section__title {
     font-family: var(--font-display);
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--color-gold-dim);
+    text-shadow: 0 0 8px rgba(212, 160, 23, 0.15);
 }
 
 .toolbar-tools {
@@ -41,10 +63,12 @@
 }
 
 .toolbar-tool-btn {
-    min-width: 60px;
+    min-width: 65px;
+    font-size: 0.72rem !important;
+    padding: 5px 10px !important;
 }
 
-/* Terrain Palette */
+/* ========== TERRAIN PALETTE ========== */
 .terrain-palette {
     display: flex;
     flex-wrap: wrap;
@@ -54,45 +78,48 @@
 .terrain-swatch {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
+    gap: 5px;
+    padding: 4px 10px;
     background: var(--color-bg-input);
-    border: 1px solid rgba(212, 160, 23, 0.15);
+    border: 1px solid rgba(212, 160, 23, 0.1);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-base);
     font-size: 0.75rem;
     color: var(--color-text);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .terrain-swatch:hover {
     border-color: var(--color-gold-dim);
-    background: rgba(212, 160, 23, 0.08);
+    background: rgba(212, 160, 23, 0.06);
+    transform: translateY(-1px);
 }
 
 .terrain-swatch--active {
     border-color: var(--color-gold);
-    background: rgba(212, 160, 23, 0.15);
-    box-shadow: 0 0 6px rgba(212, 160, 23, 0.3);
+    background: rgba(212, 160, 23, 0.12);
+    box-shadow: 0 0 8px rgba(212, 160, 23, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .terrain-swatch__color {
     display: inline-block;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     border-radius: 3px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .terrain-swatch__label {
     font-family: var(--font-display);
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
 
-/* Token Config Section */
+/* ========== TOKEN CONFIG ========== */
 .toolbar-token-section .form-row {
     align-items: center;
     gap: var(--space-sm);
@@ -103,31 +130,46 @@
     min-width: 35px;
 }
 
-/* Zoom Controls */
+/* ========== ZOOM CONTROLS ========== */
 .toolbar-zoom-label {
     font-family: var(--font-display);
     font-size: 0.75rem;
-    min-width: 40px;
+    min-width: 42px;
     text-align: center;
     color: var(--color-text-muted);
+    padding: 2px 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
 }
 
-/* Action Buttons */
+/* ========== ACTION BUTTONS ========== */
 .toolbar-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
 }
 
-/* Canvas Container */
+/* ========== CANVAS CONTAINER ========== */
 .map-canvas-container {
     flex: 1;
-    border: var(--border-ornate);
+    border: 2px solid var(--color-gold-dim);
     border-radius: var(--radius-md);
     overflow: hidden;
-    background: #111;
+    background: #0c0c14;
     position: relative;
     min-height: 300px;
+    box-shadow: var(--shadow-deep), inset 0 0 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Inner glow effect on canvas */
+.map-canvas-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(212, 160, 23, 0.08);
+    border-radius: calc(var(--radius-md) - 2px);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .map-canvas {
@@ -137,7 +179,7 @@
     cursor: crosshair;
 }
 
-/* Save/Load List */
+/* ========== SAVE/LOAD LIST ========== */
 .save-list {
     display: flex;
     flex-direction: column;
@@ -151,9 +193,15 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-sm);
-    padding: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
     background: var(--color-bg-input);
     border-radius: var(--radius-sm);
+    border: 1px solid rgba(212, 160, 23, 0.08);
+    transition: border-color var(--transition-base);
+}
+
+.save-list__item:hover {
+    border-color: rgba(212, 160, 23, 0.2);
 }
 
 .save-list__name {
@@ -163,10 +211,23 @@
     color: var(--color-parchment);
 }
 
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .map-toolbar {
         flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .toolbar-section {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid rgba(212, 160, 23, 0.08);
+        padding-bottom: var(--space-sm);
+    }
+
+    .toolbar-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
     }
 
     .map-builder-layout {
