@@ -1,26 +1,15 @@
 /**
  * CharacterState - D&D 5e Character Data Model
- *
- * Provides factory functions for creating blank characters and
- * computing derived stats (proficiency bonus, skill modifiers, etc.).
  */
 
 import { getProficiencyBonus } from '../data/srd-classes.js';
 import { SRD_SKILLS, ABILITIES } from '../data/srd-skills.js';
 import { abilityMod } from '../utils/dice.js';
 
-/**
- * Generate a unique ID for a new character.
- * @returns {string}
- */
 export function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-/**
- * Create a blank character data object with all default values.
- * @returns {object} A fresh character data object.
- */
 export function createBlankCharacter() {
     const skills = {};
     for (const skill of SRD_SKILLS) {
@@ -58,6 +47,15 @@ export function createBlankCharacter() {
             charisma: 10
         },
 
+        racialBonuses: {
+            strength: 0,
+            dexterity: 0,
+            constitution: 0,
+            intelligence: 0,
+            wisdom: 0,
+            charisma: 0
+        },
+
         armorClass: 10,
         speed: 30,
 
@@ -82,6 +80,8 @@ export function createBlankCharacter() {
         savingThrows,
         skills,
 
+        attacks: [],
+
         features: [],
 
         inventory: [],
@@ -99,6 +99,9 @@ export function createBlankCharacter() {
         spellAttackBonus: 0,
         spellSlots,
 
+        knownSpells: [],
+        preparedSpells: [],
+
         personalityTraits: '',
         ideals: '',
         bonds: '',
@@ -111,30 +114,34 @@ export function createBlankCharacter() {
 }
 
 /**
+ * Get the total ability score including racial bonuses.
+ */
+export function getTotalAbilityScore(char, ability) {
+    const base = char.abilities[ability] || 10;
+    const racial = char.racialBonuses?.[ability] || 0;
+    return base + racial;
+}
+
+/**
  * Recompute all derived stats on a character data object (mutates in place).
- *   - proficiencyBonus from level
- *   - skill modifiers
- *   - saving throw modifiers
- *   - spell save DC & attack bonus
- *   - initiative
- *
- * @param {object} char - The character data object.
- * @returns {object} The same object, updated.
  */
 export function recomputeDerived(char) {
-    // Proficiency bonus
+    // Migration guards for old characters
+    if (!char.racialBonuses) {
+        char.racialBonuses = { strength: 0, dexterity: 0, constitution: 0, intelligence: 0, wisdom: 0, charisma: 0 };
+    }
+    if (!char.attacks) char.attacks = [];
+    if (!char.knownSpells) char.knownSpells = [];
+    if (!char.preparedSpells) char.preparedSpells = [];
+
     char.proficiencyBonus = getProficiencyBonus(char.level || 1);
 
-    // Hit dice string
     if (char.class) {
-        // hitDice.total is a display string like "5d10"
-        // Keep current count at most equal to level
         char.hitDice.current = Math.min(char.hitDice.current, char.level);
     }
 
-    // Spell save DC and attack bonus
     if (char.spellcastingAbility && char.abilities[char.spellcastingAbility] !== undefined) {
-        const mod = abilityMod(char.abilities[char.spellcastingAbility]);
+        const mod = abilityMod(getTotalAbilityScore(char, char.spellcastingAbility));
         char.spellSaveDC = 8 + char.proficiencyBonus + mod;
         char.spellAttackBonus = char.proficiencyBonus + mod;
     }
@@ -143,63 +150,40 @@ export function recomputeDerived(char) {
     return char;
 }
 
-/**
- * Get the modifier for a specific skill.
- * @param {object} char - Character data object
- * @param {string} skillName - Skill name (e.g. 'Perception')
- * @param {string} abilityKey - Governing ability (e.g. 'wisdom')
- * @returns {number}
- */
 export function getSkillModifier(char, skillName, abilityKey) {
-    const base = abilityMod(char.abilities[abilityKey] || 10);
+    const base = abilityMod(getTotalAbilityScore(char, abilityKey));
     const proficient = char.skills[skillName]?.proficient || false;
     return base + (proficient ? char.proficiencyBonus : 0);
 }
 
-/**
- * Get the modifier for a saving throw.
- * @param {object} char - Character data object
- * @param {string} abilityKey - Ability (e.g. 'dexterity')
- * @returns {number}
- */
 export function getSavingThrowModifier(char, abilityKey) {
-    const base = abilityMod(char.abilities[abilityKey] || 10);
+    const base = abilityMod(getTotalAbilityScore(char, abilityKey));
     const proficient = char.savingThrows[abilityKey]?.proficient || false;
     return base + (proficient ? char.proficiencyBonus : 0);
 }
 
-/**
- * Get the initiative modifier (DEX mod).
- * @param {object} char
- * @returns {number}
- */
 export function getInitiative(char) {
-    return abilityMod(char.abilities.dexterity || 10);
+    return abilityMod(getTotalAbilityScore(char, 'dexterity'));
 }
 
-/**
- * Get passive perception.
- * @param {object} char
- * @returns {number}
- */
 export function getPassivePerception(char) {
     return 10 + getSkillModifier(char, 'Perception', 'wisdom');
 }
 
 /**
- * Format a modifier number as a signed string (e.g. +2, -1, +0).
- * @param {number} mod
- * @returns {string}
+ * Compute attack bonus for a given attack entry.
  */
+export function getAttackBonus(char, attack) {
+    const ability = attack.ability || 'strength';
+    const mod = abilityMod(getTotalAbilityScore(char, ability));
+    const prof = attack.proficient ? char.proficiencyBonus : 0;
+    return mod + prof + (attack.bonusMod || 0);
+}
+
 export function formatMod(mod) {
     return mod >= 0 ? `+${mod}` : `${mod}`;
 }
 
-/**
- * Deep clone a character object.
- * @param {object} char
- * @returns {object}
- */
 export function cloneCharacter(char) {
     return JSON.parse(JSON.stringify(char));
 }

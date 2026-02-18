@@ -1,5 +1,6 @@
 import { Storage } from '../utils/storage.js';
 import { MapGrid } from './MapGrid.js';
+import { drawTerrainPattern } from '../data/terrains.js';
 
 const STORAGE_PREFIX = 'dnd_map_';
 const AUTOSAVE_KEY = 'dnd_map__autosave';
@@ -57,5 +58,65 @@ export const MapIO = {
             reader.onerror = reject;
             reader.readAsText(file);
         });
+    },
+
+    exportPNG(mapGrid, renderer) {
+        const cs = renderer.cellSize;
+        const width = mapGrid.cols * cs;
+        const height = mapGrid.rows * cs;
+
+        const offscreen = document.createElement('canvas');
+        offscreen.width = width;
+        offscreen.height = height;
+        const ctx = offscreen.getContext('2d');
+
+        for (let r = 0; r < mapGrid.rows; r++) {
+            for (let c = 0; c < mapGrid.cols; c++) {
+                drawTerrainPattern(ctx, c * cs, r * cs, cs, mapGrid.cells[r][c].terrain);
+            }
+        }
+
+        if (renderer.showGrid) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            for (let r = 0; r <= mapGrid.rows; r++) {
+                ctx.moveTo(0, r * cs);
+                ctx.lineTo(width, r * cs);
+            }
+            for (let c = 0; c <= mapGrid.cols; c++) {
+                ctx.moveTo(c * cs, 0);
+                ctx.lineTo(c * cs, height);
+            }
+            ctx.stroke();
+        }
+
+        for (let r = 0; r < mapGrid.rows; r++) {
+            for (let c = 0; c < mapGrid.cols; c++) {
+                if (mapGrid.cells[r][c].token) {
+                    renderer._drawToken(ctx, r, c, mapGrid.cells[r][c].token);
+                }
+            }
+        }
+
+        if (renderer.showFog) {
+            for (let r = 0; r < mapGrid.rows; r++) {
+                for (let c = 0; c < mapGrid.cols; c++) {
+                    if (mapGrid.cells[r][c].fog) {
+                        ctx.fillStyle = 'rgba(5, 5, 10, 0.85)';
+                        ctx.fillRect(c * cs, r * cs, cs, cs);
+                    }
+                }
+            }
+        }
+
+        offscreen.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dnd-map.png';
+            a.click();
+            URL.revokeObjectURL(url);
+        }, 'image/png');
     },
 };

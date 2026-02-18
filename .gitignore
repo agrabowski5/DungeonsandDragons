@@ -10,3 +10,5 @@ dist/
 *.tmp
 coverage/
 .vercel/
+
+.vercel

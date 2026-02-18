@@ -82,6 +82,24 @@
     font-style: italic;
 }
 
+/* Party Names */
+.party-names {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.party-name-row {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.party-hp-input {
+    width: 80px;
+    flex-shrink: 0;
+}
+
 /* Encounter Summary */
 .encounter-summary__empty {
     text-align: center;
@@ -189,7 +207,7 @@
 
 /* ─── Combat Mode ─────────────────────────────── */
 
-.combat-layout {
+.combat-wrapper {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
@@ -203,6 +221,8 @@
     background: var(--color-bg-panel);
     border: var(--border-subtle);
     border-radius: var(--radius-md);
+    flex-wrap: wrap;
+    gap: var(--space-sm);
 }
 
 .combat-header__title {
@@ -214,6 +234,16 @@
 .combat-header__actions {
     display: flex;
     gap: var(--space-sm);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Two-Column Combat Layout */
+.combat-columns {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-md);
+    align-items: start;
 }
 
 /* Combat List */
@@ -232,6 +262,7 @@
     border: 1px solid transparent;
     border-radius: var(--radius-md);
     transition: all var(--transition-base);
+    flex-wrap: wrap;
 }
 
 .combat-entry--active {
@@ -241,7 +272,6 @@
 
 .combat-entry--defeated {
     opacity: 0.4;
-    text-decoration: line-through;
 }
 
 .combat-entry__indicator {
@@ -273,7 +303,7 @@
 .combat-entry__name {
     display: flex;
     flex-direction: column;
-    min-width: 120px;
+    min-width: 100px;
     flex-shrink: 0;
 }
 
@@ -291,8 +321,12 @@
 
 .combat-entry .hp-bar {
     flex: 1;
-    min-width: 100px;
-    max-width: 200px;
+    min-width: 80px;
+    max-width: 180px;
+}
+
+.hp-bar--player {
+    max-width: 140px;
 }
 
 .combat-entry__controls {
@@ -319,6 +353,278 @@
     flex-shrink: 0;
 }
 
+/* Auto-Skip Toggle */
+.auto-skip-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.auto-skip-checkbox {
+    accent-color: var(--color-gold);
+}
+
+/* ─── Condition Badges ─────────────────────────── */
+
+.condition-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+}
+
+.condition-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    border: 1px solid;
+    cursor: default;
+    white-space: nowrap;
+}
+
+.condition-badge__remove {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1;
+    padding: 0;
+    margin-left: 2px;
+    opacity: 0.6;
+}
+
+.condition-badge__remove:hover {
+    opacity: 1;
+}
+
+.condition-add-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 0.75rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Condition Dropdown Menu */
+.condition-menu {
+    position: fixed;
+    z-index: 1000;
+    background: var(--color-bg-panel, #1a1a2e);
+    border: 1px solid rgba(212, 160, 23, 0.3);
+    border-radius: var(--radius-md, 6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 180px;
+    padding: 4px 0;
+}
+
+.condition-menu__item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--color-text, #ccc);
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.condition-menu__item:hover {
+    background: rgba(212, 160, 23, 0.12);
+    color: var(--color-parchment, #fff);
+}
+
+.condition-menu__conc-row {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(212, 160, 23, 0.15);
+    margin-top: 2px;
+}
+
+/* ─── Concentration Badge ──────────────────────── */
+
+.conc-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: rgba(212, 160, 23, 0.15);
+    border: 1px solid var(--color-gold, #d4a017);
+    color: var(--color-gold, #d4a017);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.conc-badge:hover {
+    background: rgba(212, 160, 23, 0.3);
+}
+
+/* Concentration Toast */
+.conc-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(10, 10, 20, 0.95);
+    border: 2px solid var(--color-gold, #d4a017);
+    color: var(--color-gold, #d4a017);
+    padding: 12px 24px;
+    border-radius: var(--radius-md, 6px);
+    font-family: var(--font-display, serif);
+    font-size: 0.9rem;
+    font-weight: 700;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(212, 160, 23, 0.3);
+}
+
+.conc-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Death Saves ──────────────────────────────── */
+
+.death-saves {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 4px 0 0 28px;
+}
+
+.death-saves__label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.death-saves__group {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.death-save-circle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #4caf50;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s;
+}
+
+.death-save-circle--fail {
+    border-color: #dc143c;
+}
+
+.death-save-circle--filled {
+    background: #4caf50;
+    box-shadow: 0 0 4px rgba(76, 175, 80, 0.5);
+}
+
+.death-save-circle--fail.death-save-circle--filled {
+    background: #dc143c;
+    box-shadow: 0 0 4px rgba(220, 20, 60, 0.5);
+}
+
+.dead-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #dc143c;
+    background: rgba(220, 20, 60, 0.15);
+    border: 1px solid #dc143c;
+    border-radius: 10px;
+    padding: 1px 8px;
+    letter-spacing: 0.5px;
+}
+
+.stabilized-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #4caf50;
+    background: rgba(76, 175, 80, 0.15);
+    border: 1px solid #4caf50;
+    border-radius: 10px;
+    padding: 1px 8px;
+    letter-spacing: 0.5px;
+}
+
+/* ─── Combat Log Panel ─────────────────────────── */
+
+.combat-log-panel {
+    background: var(--color-bg-panel);
+    border: var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
+    position: sticky;
+    top: var(--space-md);
+}
+
+.combat-log-panel .card__header {
+    margin-bottom: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.combat-log-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 500px;
+}
+
+.combat-log-entry {
+    display: flex;
+    gap: var(--space-sm);
+    padding: 3px 6px;
+    font-size: 0.72rem;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.combat-log-entry__round {
+    font-weight: 700;
+    color: var(--color-gold, #d4a017);
+    min-width: 24px;
+    flex-shrink: 0;
+}
+
+.combat-log-entry__msg {
+    color: var(--color-text, #ccc);
+    line-height: 1.3;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .encounter-layout {
@@ -327,6 +633,15 @@
 
     .encounter-monster-browser {
         max-height: 350px;
+    }
+
+    .combat-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .combat-log-panel {
+        position: static;
+        max-height: 300px;
     }
 }
 
@@ -350,5 +665,9 @@
     .combat-header {
         flex-direction: column;
         gap: var(--space-sm);
+    }
+
+    .death-saves {
+        padding-left: 0;
     }
 }

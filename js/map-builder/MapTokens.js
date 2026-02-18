@@ -1,11 +1,12 @@
 export class MapTokens {
-    constructor(canvas, mapGrid, renderer) {
+    constructor(canvas, mapGrid, renderer, toolbar) {
         this.canvas = canvas;
         this.grid = mapGrid;
         this.renderer = renderer;
+        this.toolbar = toolbar || null;
 
-        this.tokenTemplate = { type: 'player', label: 'P', color: '#4a90d9' };
-        this.dragging = null; // { row, col, token }
+        this.tokenTemplate = { type: 'player', label: 'P', color: '#4a90d9', size: 1 };
+        this.dragging = null;
         this.enabled = false;
 
         this._onPointerDown = this._onPointerDown.bind(this);
@@ -38,23 +39,33 @@ export class MapTokens {
     }
 
     _onPointerDown(e) {
-        if (e.button === 2) return; // right-click handled in contextmenu
+        if (e.button === 2) return;
         const { row, col } = this.renderer.screenToGrid(e.clientX, e.clientY);
         if (!this.grid.inBounds(row, col)) return;
 
-        const cell = this.grid.getCell(row, col);
-        if (cell.token) {
-            // Start dragging existing token
-            this.dragging = { row, col, token: cell.token };
+        const hit = this.grid.getTokenAt(row, col);
+        if (hit) {
+            this.dragging = {
+                row: hit.anchorRow,
+                col: hit.anchorCol,
+                token: hit.token,
+                offsetRow: row - hit.anchorRow,
+                offsetCol: col - hit.anchorCol,
+            };
             this.canvas.style.cursor = 'grabbing';
         } else {
-            // Place new token
-            this.grid.setToken(row, col, { ...this.tokenTemplate });
-            this.renderer.render();
+            const config = this.toolbar
+                ? this.toolbar.getTokenConfig()
+                : this.tokenTemplate;
+            const size = config.size || 1;
+            if (!this.grid.isTokenPlacementBlocked(row, col, size)) {
+                this.grid.setToken(row, col, { ...config });
+                this.renderer.render();
+            }
         }
     }
 
-    _onPointerMove(e) {
+    _onPointerMove(_e) {
         if (!this.dragging) return;
         this.canvas.style.cursor = 'grabbing';
     }
@@ -63,11 +74,12 @@ export class MapTokens {
         if (!this.dragging) return;
 
         const { row, col } = this.renderer.screenToGrid(e.clientX, e.clientY);
-        if (this.grid.inBounds(row, col) && (row !== this.dragging.row || col !== this.dragging.col)) {
-            const targetCell = this.grid.getCell(row, col);
-            if (!targetCell.token) {
-                this.grid.moveToken(this.dragging.row, this.dragging.col, row, col);
-            }
+        const newAnchorRow = row - (this.dragging.offsetRow || 0);
+        const newAnchorCol = col - (this.dragging.offsetCol || 0);
+
+        if (this.grid.inBounds(newAnchorRow, newAnchorCol) &&
+            (newAnchorRow !== this.dragging.row || newAnchorCol !== this.dragging.col)) {
+            this.grid.moveToken(this.dragging.row, this.dragging.col, newAnchorRow, newAnchorCol);
         }
 
         this.dragging = null;
@@ -80,9 +92,9 @@ export class MapTokens {
         const { row, col } = this.renderer.screenToGrid(e.clientX, e.clientY);
         if (!this.grid.inBounds(row, col)) return;
 
-        const cell = this.grid.getCell(row, col);
-        if (cell.token) {
-            this.grid.removeToken(row, col);
+        const hit = this.grid.getTokenAt(row, col);
+        if (hit) {
+            this.grid.removeToken(hit.anchorRow, hit.anchorCol);
             this.renderer.render();
         }
     }

@@ -12,6 +12,14 @@ export class InitiativeTracker {
         this.state.setPlayerInitiative(instanceId, parseInt(value) || 0);
     }
 
+    setPlayerName(instanceId, name) {
+        this.state.setPlayerName(instanceId, name);
+    }
+
+    setPlayerMaxHp(instanceId, maxHp) {
+        this.state.setPlayerMaxHp(instanceId, parseInt(maxHp) || 0);
+    }
+
     nextTurn() {
         this.state.nextTurn();
     }
@@ -25,11 +33,35 @@ export class InitiativeTracker {
     }
 
     damage(instanceId, amount) {
-        this.state.damage(instanceId, parseInt(amount) || 0);
+        return this.state.damage(instanceId, parseInt(amount) || 0);
     }
 
     heal(instanceId, amount) {
         this.state.heal(instanceId, parseInt(amount) || 0);
+    }
+
+    addCondition(instanceId, conditionId) {
+        this.state.addCondition(instanceId, conditionId);
+    }
+
+    removeCondition(instanceId, conditionId) {
+        this.state.removeCondition(instanceId, conditionId);
+    }
+
+    getConditions(instanceId) {
+        return this.state.getConditions(instanceId);
+    }
+
+    markDeathSave(instanceId, type, value) {
+        this.state.markDeathSave(instanceId, type, value);
+    }
+
+    setConcentration(instanceId, active, spell) {
+        this.state.setConcentration(instanceId, active, spell);
+    }
+
+    saveRoster() {
+        this.state.saveRoster();
     }
 
     getRound() {
@@ -38,6 +70,10 @@ export class InitiativeTracker {
 
     getOrder() {
         return this.state.initiativeOrder;
+    }
+
+    getCombatLog() {
+        return this.state.combatLog;
     }
 
     isCurrentTurn(instanceId) {

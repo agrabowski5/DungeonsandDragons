@@ -11,22 +11,12 @@ export class MapController {
     constructor(container) {
         this.container = container;
 
-        // Build DOM
         this._buildLayout();
 
-        // Init model
         this.grid = new MapGrid(20, 20);
-
-        // Init renderer
         this.renderer = new MapRenderer(this.canvas, this.grid);
-
-        // Init toolbar
         this.toolbar = new MapToolbar(this.container);
-
-        // Init token handler
-        this.tokens = new MapTokens(this.canvas, this.grid, this.renderer);
-
-        // Init history
+        this.tokens = new MapTokens(this.canvas, this.grid, this.renderer, this.toolbar);
         this.history = new MapHistory();
 
         // State
@@ -36,15 +26,10 @@ export class MapController {
         this.painting = false;
         this.panning = false;
         this.lastPanPos = null;
-
-        // Pending cells for undo (accumulated during a paint stroke)
-        this._pendingCells = new Map(); // key "r,c" -> { row, col, before, after }
-
-        // Shape tool state
+        this._pendingCells = new Map();
         this._shapeStart = null;
-
-        // Ruler state
         this._rulerStart = null;
+        this._lastButton = 0;
 
         this._bindToolbar();
         this._bindCanvas();
@@ -74,7 +59,6 @@ export class MapController {
             this.currentTool = tool;
             this._updateCursor();
 
-            // Clear any lingering overlays
             this.renderer.shapePreview = null;
             this.renderer.rulerOverlay = null;
             this._shapeStart = null;
@@ -123,7 +107,7 @@ export class MapController {
 
     _bindCanvas() {
         this.canvas.addEventListener('pointerdown', (e) => {
-            if (this.currentTool === 'token') return; // MapTokens handles this
+            if (this.currentTool === 'token') return;
 
             if (e.button === 0) {
                 if (this.currentTool === 'pan') {
@@ -140,14 +124,17 @@ export class MapController {
                     if (this.grid.inBounds(pos.row, pos.col)) {
                         this._rulerStart = pos;
                     }
+                } else if (this.currentTool === 'fill') {
+                    const pos = this.renderer.screenToGrid(e.clientX, e.clientY);
+                    if (this.grid.inBounds(pos.row, pos.col)) {
+                        this._applyFloodFill(pos.row, pos.col);
+                    }
                 } else {
-                    // paint, erase, fog
                     this.painting = true;
                     this._pendingCells.clear();
                     this._applyBrush(e, e.button);
                 }
             } else if (e.button === 2 && this.currentTool === 'fog') {
-                // Right-click removes fog
                 e.preventDefault();
                 this.painting = true;
                 this._pendingCells.clear();
@@ -155,7 +142,6 @@ export class MapController {
             }
         });
 
-        // Prevent context menu on right-click for fog tool
         this.canvas.addEventListener('contextmenu', (e) => {
             if (this.currentTool === 'fog') {
                 e.preventDefault();
@@ -163,6 +149,14 @@ export class MapController {
         });
 
         this.canvas.addEventListener('pointermove', (e) => {
+            // Always update hover coordinate
+            const pos = this.renderer.screenToGrid(e.clientX, e.clientY);
+            if (this.grid.inBounds(pos.row, pos.col)) {
+                this.renderer.setHoverCell(pos.row, pos.col);
+            } else {
+                this.renderer.setHoverCell(null, null);
+            }
+
             if (this.currentTool === 'token') return;
 
             if (this.painting) {
@@ -217,9 +211,11 @@ export class MapController {
         };
 
         this.canvas.addEventListener('pointerup', endInteraction);
-        this.canvas.addEventListener('pointerleave', endInteraction);
+        this.canvas.addEventListener('pointerleave', (e) => {
+            this.renderer.setHoverCell(null, null);
+            endInteraction(e);
+        });
 
-        // Zoom with mouse wheel
         this.canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -238,7 +234,6 @@ export class MapController {
 
     _bindKeyboard() {
         document.addEventListener('keydown', (e) => {
-            // Only respond when map tab is visible
             const mapTab = this.container.closest('[data-tab-content="maps"]');
             if (mapTab && mapTab.style.display === 'none') return;
 
@@ -266,7 +261,6 @@ export class MapController {
                 const key = `${row},${col}`;
                 const cell = this.grid.cells[row][col];
 
-                // Snapshot 'before' only on first touch
                 if (!this._pendingCells.has(key)) {
                     this._pendingCells.set(key, {
                         row, col,
@@ -275,17 +269,15 @@ export class MapController {
                     });
                 }
 
-                // Apply the tool effect
                 if (this.currentTool === 'paint') {
                     this.grid.setTerrain(row, col, this.currentTerrain);
                 } else if (this.currentTool === 'erase') {
                     this.grid.setTerrain(row, col, 'void');
                     this.grid.removeToken(row, col);
                 } else if (this.currentTool === 'fog') {
-                    this.grid.setFog(row, col, button !== 2); // left=fog, right=unfog
+                    this.grid.setFog(row, col, button !== 2);
                 }
 
-                // Snapshot 'after'
                 this._pendingCells.get(key).after = { ...this.grid.cells[row][col] };
             }
         }
@@ -295,7 +287,6 @@ export class MapController {
     _commitPending() {
         if (this._pendingCells.size === 0) return;
 
-        // Filter out cells that didn't actually change
         const cells = [];
         for (const entry of this._pendingCells.values()) {
             const b = entry.before;
@@ -339,6 +330,16 @@ export class MapController {
         this.renderer.render();
     }
 
+    _applyFloodFill(row, col) {
+        const changed = this.grid.floodFill(row, col, this.currentTerrain);
+        if (changed.length > 0) {
+            this.history.push({ type: 'fill', cells: changed });
+            this.toolbar.updateUndoRedo(this.history.canUndo, this.history.canRedo);
+            this.renderer.render();
+            this._autosave();
+        }
+    }
+
     _undo() {
         if (this.history.undo(this.grid)) {
             this.toolbar.updateUndoRedo(this.history.canUndo, this.history.canRedo);
@@ -358,6 +359,7 @@ export class MapController {
     _updateCursor() {
         switch (this.currentTool) {
             case 'paint': this.canvas.style.cursor = 'crosshair'; break;
+            case 'fill': this.canvas.style.cursor = 'cell'; break;
             case 'erase': this.canvas.style.cursor = 'crosshair'; break;
             case 'token': this.canvas.style.cursor = 'crosshair'; break;
             case 'rect': this.canvas.style.cursor = 'crosshair'; break;
@@ -374,6 +376,7 @@ export class MapController {
             case 'save': this._showSaveDialog(); break;
             case 'load': this._showLoadDialog(); break;
             case 'export': MapIO.exportJSON(this.grid); break;
+            case 'png': MapIO.exportPNG(this.grid, this.renderer); break;
             case 'import': this._triggerImport(); break;
             case 'clear': this._confirmClear(); break;
         }

@@ -726,3 +726,271 @@
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/*  RACIAL BONUS BADGES                                                */
+/* ------------------------------------------------------------------ */
+
+.racial-bonus-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    padding: 1px 5px;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #4ae0c9;
+    background: rgba(74, 224, 201, 0.12);
+    border: 1px solid rgba(74, 224, 201, 0.4);
+    margin-left: var(--space-xs);
+}
+
+/* ------------------------------------------------------------------ */
+/*  ATTACKS SECTION                                                    */
+/* ------------------------------------------------------------------ */
+
+.charsheet__attacks-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.charsheet__attack-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-sm);
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-sm);
+    flex-wrap: wrap;
+}
+
+.attack-name-input {
+    width: 120px;
+    flex-shrink: 0;
+}
+
+.attack-damage-input {
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.attack-prof-label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+}
+
+.attack-bonus-display {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-gold-light);
+    min-width: 30px;
+    text-align: center;
+}
+
+.attack-roll-result {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-text-bright);
+    min-width: 80px;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.roll--crit {
+    color: #4caf50 !important;
+    text-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.roll--fumble {
+    color: #dc143c !important;
+    text-shadow: 0 0 6px rgba(220, 20, 60, 0.6);
+}
+
+.select--xs {
+    padding: 2px 4px;
+    font-size: 0.7rem;
+    min-width: 60px;
+}
+
+.btn--xs {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    line-height: 1.3;
+}
+
+/* ------------------------------------------------------------------ */
+/*  SPELLS SECTION                                                     */
+/* ------------------------------------------------------------------ */
+
+.charsheet__spell-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.charsheet__prepared-count {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--color-gold);
+    font-weight: 700;
+}
+
+.spell-level-header {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    color: var(--color-gold);
+    padding: var(--space-xs) 0;
+    margin-top: var(--space-sm);
+    border-bottom: 1px solid rgba(212, 160, 23, 0.15);
+}
+
+.spell-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-base);
+}
+
+.spell-row:hover {
+    background: rgba(212, 160, 23, 0.05);
+}
+
+.spell-row__name {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spell-row__name--prepared {
+    color: var(--color-text-bright);
+    font-weight: 600;
+}
+
+.spell-row__name:hover {
+    text-decoration: underline;
+    color: var(--color-gold-light);
+}
+
+.spell-school-badge {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 8px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.spell-school--abjuration { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.spell-school--conjuration { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.spell-school--divination { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+.spell-school--enchantment { background: rgba(124, 58, 237, 0.15); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.3); }
+.spell-school--evocation { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.spell-school--illusion { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+.spell-school--necromancy { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+.spell-school--transmutation { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+
+.spell-conc-badge,
+.spell-ritual-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 0.6rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.spell-conc-badge {
+    background: rgba(212, 160, 23, 0.15);
+    color: var(--color-gold);
+    border: 1px solid rgba(212, 160, 23, 0.3);
+}
+
+.spell-ritual-badge {
+    background: rgba(74, 224, 201, 0.12);
+    color: #4ae0c9;
+    border: 1px solid rgba(74, 224, 201, 0.3);
+}
+
+.spell-row__detail {
+    padding: var(--space-sm) var(--space-md);
+    margin: 0 var(--space-sm) var(--space-xs);
+    background: var(--color-bg-card);
+    border: var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--color-text);
+}
+
+.spell-detail-meta {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-xs);
+    font-style: italic;
+}
+
+.spell-detail-desc {
+    margin-bottom: var(--space-xs);
+}
+
+.spell-detail-higher {
+    font-size: 0.72rem;
+    color: var(--color-gold);
+}
+
+/* Spell Picker Modal */
+.spell-picker {
+    min-width: 400px;
+    max-width: 600px;
+}
+
+.spell-picker-list {
+    max-height: 350px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.spell-picker-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--color-bg-input);
+    border-radius: var(--radius-sm);
+}
+
+.spell-picker-item__name {
+    flex: 1;
+    font-size: 0.82rem;
+    color: var(--color-text);
+}
+
+.spell-picker-item__meta {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    min-width: 80px;
+    text-align: right;
+}

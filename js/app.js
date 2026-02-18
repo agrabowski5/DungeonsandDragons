@@ -109,6 +109,11 @@ class App {
                     this.modules[tabId] = new SessionNotesUI(panel);
                     break;
                 }
+                case 'quick-reference': {
+                    const { QuickReferenceUI } = await import('./quick-reference/QuickReferenceUI.js');
+                    this.modules[tabId] = new QuickReferenceUI(panel);
+                    break;
+                }
             }
         } catch (err) {
             console.error(`Failed to load module for ${tabId}:`, err);

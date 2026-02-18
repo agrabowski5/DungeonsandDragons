@@ -49,6 +49,7 @@ export class MapToolbar {
 
         const tools = [
             { id: 'paint', label: 'Paint', icon: '\u{1F58C}' },
+            { id: 'fill', label: 'Fill', icon: '\u{1FAA3}' },
             { id: 'rect', label: 'Rect', icon: '\u{25AD}' },
             { id: 'line', label: 'Line', icon: '\u{2571}' },
             { id: 'token', label: 'Token', icon: '\u{1F3AF}' },
@@ -151,6 +152,17 @@ export class MapToolbar {
         colorRow.appendChild(this._tokenColorInput);
         section.appendChild(colorRow);
 
+        const sizeRow = el('div', { className: 'form-row' });
+        this._tokenSizeSelect = el('select', { className: 'select input--sm' }, [
+            el('option', { value: '1', textContent: 'Medium (1x1)' }),
+            el('option', { value: '2', textContent: 'Large (2x2)' }),
+            el('option', { value: '3', textContent: 'Huge (3x3)' }),
+            el('option', { value: '4', textContent: 'Gargantuan (4x4)' }),
+        ]);
+        sizeRow.appendChild(el('label', { className: 'label', textContent: 'Size' }));
+        sizeRow.appendChild(this._tokenSizeSelect);
+        section.appendChild(sizeRow);
+
         this._tokenTypeSelect.addEventListener('change', () => {
             this._tokenColorInput.value = this._tokenTypeSelect.value === 'player' ? '#4a90d9' : '#d94a4a';
         });
@@ -163,7 +175,6 @@ export class MapToolbar {
         section.appendChild(el('div', { className: 'toolbar-section__title', textContent: 'History' }));
 
         const row = el('div', { className: 'toolbar-tools' });
-
         this._undoBtn = el('button', {
             className: 'btn btn--sm',
             textContent: '\u{21A9} Undo',
@@ -267,6 +278,7 @@ export class MapToolbar {
             { id: 'save', label: 'Save', cls: 'btn--primary' },
             { id: 'load', label: 'Load', cls: '' },
             { id: 'export', label: 'Export', cls: '' },
+            { id: 'png', label: 'PNG', cls: '' },
             { id: 'import', label: 'Import', cls: '' },
             { id: 'clear', label: 'Clear', cls: 'btn--danger' },
         ];
@@ -316,7 +328,7 @@ export class MapToolbar {
         const tokenSection = this.toolbarEl.querySelector('.toolbar-token-section');
         const brushSection = this.toolbarEl.querySelector('.toolbar-brush-section');
 
-        const showTerrain = ['paint', 'rect', 'line'].includes(this.currentTool);
+        const showTerrain = ['paint', 'rect', 'line', 'fill'].includes(this.currentTool);
         const showBrush = ['paint', 'erase', 'fog'].includes(this.currentTool);
 
         if (terrainSection) terrainSection.style.display = showTerrain ? '' : 'none';
@@ -329,6 +341,7 @@ export class MapToolbar {
             type: this._tokenTypeSelect.value,
             label: this._tokenLabelInput.value || this._tokenTypeSelect.value.charAt(0).toUpperCase(),
             color: this._tokenColorInput.value,
+            size: parseInt(this._tokenSizeSelect.value) || 1,
         };
     }
 
