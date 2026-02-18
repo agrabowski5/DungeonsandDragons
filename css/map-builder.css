@@ -211,6 +211,15 @@
     color: var(--color-parchment);
 }
 
+/* ========== BRUSH SIZE BUTTONS ========== */
+.toolbar-brush-btn {
+    min-width: 40px;
+    font-size: 0.7rem !important;
+    padding: 4px 8px !important;
+    font-family: var(--font-display);
+    letter-spacing: 0.5px;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .map-toolbar {

@@ -3,6 +3,8 @@ import { MapRenderer } from './MapRenderer.js';
 import { MapToolbar } from './MapToolbar.js';
 import { MapTokens } from './MapTokens.js';
 import { MapIO } from './MapIO.js';
+import { MapHistory } from './MapHistory.js';
+import { getRectCells, getLineCells } from './MapShapes.js';
 import { el, showModal } from '../utils/dom.js';
 
 export class MapController {
@@ -24,16 +26,30 @@ export class MapController {
         // Init token handler
         this.tokens = new MapTokens(this.canvas, this.grid, this.renderer);
 
+        // Init history
+        this.history = new MapHistory();
+
         // State
         this.currentTool = 'paint';
         this.currentTerrain = 'grass';
+        this.brushSize = 1;
         this.painting = false;
         this.panning = false;
         this.lastPanPos = null;
 
+        // Pending cells for undo (accumulated during a paint stroke)
+        this._pendingCells = new Map(); // key "r,c" -> { row, col, before, after }
+
+        // Shape tool state
+        this._shapeStart = null;
+
+        // Ruler state
+        this._rulerStart = null;
+
         this._bindToolbar();
         this._bindCanvas();
         this._bindResize();
+        this._bindKeyboard();
         this._autoRestore();
 
         this.renderer.render();
@@ -58,15 +74,28 @@ export class MapController {
             this.currentTool = tool;
             this._updateCursor();
 
+            // Clear any lingering overlays
+            this.renderer.shapePreview = null;
+            this.renderer.rulerOverlay = null;
+            this._shapeStart = null;
+            this._rulerStart = null;
+
             if (tool === 'token') {
                 this.tokens.enable();
             } else {
                 this.tokens.disable();
             }
+            this.renderer.render();
+        };
+
+        this.toolbar.onBrushSizeChange = (size) => {
+            this.brushSize = size;
         };
 
         this.toolbar.onGridResize = (rows, cols) => {
             this.grid.resize(rows, cols);
+            this.history.clear();
+            this.toolbar.updateUndoRedo(false, false);
             this.renderer.resizeCanvas();
             this.renderer.render();
             this._autosave();
@@ -82,6 +111,13 @@ export class MapController {
             return this.renderer.toggleGrid();
         };
 
+        this.toolbar.onFogToggle = () => {
+            return this.renderer.toggleFogVisibility();
+        };
+
+        this.toolbar.onUndo = () => this._undo();
+        this.toolbar.onRedo = () => this._redo();
+
         this.toolbar.onAction = (action) => this._handleAction(action);
     }
 
@@ -94,10 +130,35 @@ export class MapController {
                     this.panning = true;
                     this.lastPanPos = { x: e.clientX, y: e.clientY };
                     this.canvas.style.cursor = 'grabbing';
+                } else if (this.currentTool === 'rect' || this.currentTool === 'line') {
+                    const pos = this.renderer.screenToGrid(e.clientX, e.clientY);
+                    if (this.grid.inBounds(pos.row, pos.col)) {
+                        this._shapeStart = pos;
+                    }
+                } else if (this.currentTool === 'ruler') {
+                    const pos = this.renderer.screenToGrid(e.clientX, e.clientY);
+                    if (this.grid.inBounds(pos.row, pos.col)) {
+                        this._rulerStart = pos;
+                    }
                 } else {
+                    // paint, erase, fog
                     this.painting = true;
-                    this._paintAt(e);
+                    this._pendingCells.clear();
+                    this._applyBrush(e, e.button);
                 }
+            } else if (e.button === 2 && this.currentTool === 'fog') {
+                // Right-click removes fog
+                e.preventDefault();
+                this.painting = true;
+                this._pendingCells.clear();
+                this._applyBrush(e, 2);
+            }
+        });
+
+        // Prevent context menu on right-click for fog tool
+        this.canvas.addEventListener('contextmenu', (e) => {
+            if (this.currentTool === 'fog') {
+                e.preventDefault();
             }
         });
 
@@ -105,7 +166,7 @@ export class MapController {
             if (this.currentTool === 'token') return;
 
             if (this.painting) {
-                this._paintAt(e);
+                this._applyBrush(e, this._lastButton);
             } else if (this.panning && this.lastPanPos) {
                 const dx = (e.clientX - this.lastPanPos.x) / this.renderer.zoom;
                 const dy = (e.clientY - this.lastPanPos.y) / this.renderer.zoom;
@@ -113,13 +174,40 @@ export class MapController {
                 this.renderer.offsetY += dy;
                 this.lastPanPos = { x: e.clientX, y: e.clientY };
                 this.renderer.render();
+            } else if (this._shapeStart) {
+                const end = this.renderer.screenToGrid(e.clientX, e.clientY);
+                this.renderer.shapePreview = {
+                    start: this._shapeStart,
+                    end,
+                    tool: this.currentTool,
+                };
+                this.renderer.render();
+            } else if (this._rulerStart) {
+                const end = this.renderer.screenToGrid(e.clientX, e.clientY);
+                this.renderer.rulerOverlay = {
+                    start: this._rulerStart,
+                    end,
+                };
+                this.renderer.render();
             }
         });
 
-        const endPaint = () => {
+        const endInteraction = () => {
             if (this.painting) {
                 this.painting = false;
+                this._commitPending();
                 this._autosave();
+            }
+            if (this._shapeStart) {
+                this._commitShape();
+                this._shapeStart = null;
+                this.renderer.shapePreview = null;
+                this.renderer.render();
+            }
+            if (this._rulerStart) {
+                this._rulerStart = null;
+                this.renderer.rulerOverlay = null;
+                this.renderer.render();
             }
             if (this.panning) {
                 this.panning = false;
@@ -128,8 +216,8 @@ export class MapController {
             }
         };
 
-        this.canvas.addEventListener('pointerup', endPaint);
-        this.canvas.addEventListener('pointerleave', endPaint);
+        this.canvas.addEventListener('pointerup', endInteraction);
+        this.canvas.addEventListener('pointerleave', endInteraction);
 
         // Zoom with mouse wheel
         this.canvas.addEventListener('wheel', (e) => {
@@ -148,17 +236,123 @@ export class MapController {
         observer.observe(this.canvasContainer);
     }
 
-    _paintAt(e) {
-        const { row, col } = this.renderer.screenToGrid(e.clientX, e.clientY);
-        if (!this.grid.inBounds(row, col)) return;
+    _bindKeyboard() {
+        document.addEventListener('keydown', (e) => {
+            // Only respond when map tab is visible
+            const mapTab = this.container.closest('[data-tab-content="maps"]');
+            if (mapTab && mapTab.style.display === 'none') return;
 
-        if (this.currentTool === 'paint') {
-            this.grid.setTerrain(row, col, this.currentTerrain);
-        } else if (this.currentTool === 'erase') {
-            this.grid.setTerrain(row, col, 'void');
-            this.grid.removeToken(row, col);
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                this._undo();
+            } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                this._redo();
+            }
+        });
+    }
+
+    _applyBrush(e, button) {
+        this._lastButton = button;
+        const center = this.renderer.screenToGrid(e.clientX, e.clientY);
+        const half = Math.floor(this.brushSize / 2);
+
+        for (let dr = 0; dr < this.brushSize; dr++) {
+            for (let dc = 0; dc < this.brushSize; dc++) {
+                const row = center.row - half + dr;
+                const col = center.col - half + dc;
+                if (!this.grid.inBounds(row, col)) continue;
+
+                const key = `${row},${col}`;
+                const cell = this.grid.cells[row][col];
+
+                // Snapshot 'before' only on first touch
+                if (!this._pendingCells.has(key)) {
+                    this._pendingCells.set(key, {
+                        row, col,
+                        before: { ...cell },
+                        after: null,
+                    });
+                }
+
+                // Apply the tool effect
+                if (this.currentTool === 'paint') {
+                    this.grid.setTerrain(row, col, this.currentTerrain);
+                } else if (this.currentTool === 'erase') {
+                    this.grid.setTerrain(row, col, 'void');
+                    this.grid.removeToken(row, col);
+                } else if (this.currentTool === 'fog') {
+                    this.grid.setFog(row, col, button !== 2); // left=fog, right=unfog
+                }
+
+                // Snapshot 'after'
+                this._pendingCells.get(key).after = { ...this.grid.cells[row][col] };
+            }
         }
         this.renderer.render();
+    }
+
+    _commitPending() {
+        if (this._pendingCells.size === 0) return;
+
+        // Filter out cells that didn't actually change
+        const cells = [];
+        for (const entry of this._pendingCells.values()) {
+            const b = entry.before;
+            const a = entry.after;
+            if (b.terrain !== a.terrain || b.fog !== a.fog || b.token !== a.token) {
+                cells.push(entry);
+            }
+        }
+        this._pendingCells.clear();
+
+        if (cells.length === 0) return;
+
+        this.history.push({ type: this.currentTool, cells });
+        this.toolbar.updateUndoRedo(this.history.canUndo, this.history.canRedo);
+    }
+
+    _commitShape() {
+        if (!this._shapeStart || !this.renderer.shapePreview) return;
+
+        const { start, end, tool } = this.renderer.shapePreview;
+        const shapeCells = tool === 'rect'
+            ? getRectCells(start, end)
+            : getLineCells(start, end);
+
+        const cells = [];
+        for (const { r, c } of shapeCells) {
+            if (!this.grid.inBounds(r, c)) continue;
+            const before = { ...this.grid.cells[r][c] };
+            this.grid.setTerrain(r, c, this.currentTerrain);
+            const after = { ...this.grid.cells[r][c] };
+            if (before.terrain !== after.terrain) {
+                cells.push({ row: r, col: c, before, after });
+            }
+        }
+
+        if (cells.length > 0) {
+            this.history.push({ type: 'shape', cells });
+            this.toolbar.updateUndoRedo(this.history.canUndo, this.history.canRedo);
+            this._autosave();
+        }
+        this.renderer.render();
+    }
+
+    _undo() {
+        if (this.history.undo(this.grid)) {
+            this.toolbar.updateUndoRedo(this.history.canUndo, this.history.canRedo);
+            this.renderer.render();
+            this._autosave();
+        }
+    }
+
+    _redo() {
+        if (this.history.redo(this.grid)) {
+            this.toolbar.updateUndoRedo(this.history.canUndo, this.history.canRedo);
+            this.renderer.render();
+            this._autosave();
+        }
     }
 
     _updateCursor() {
@@ -166,6 +360,10 @@ export class MapController {
             case 'paint': this.canvas.style.cursor = 'crosshair'; break;
             case 'erase': this.canvas.style.cursor = 'crosshair'; break;
             case 'token': this.canvas.style.cursor = 'crosshair'; break;
+            case 'rect': this.canvas.style.cursor = 'crosshair'; break;
+            case 'line': this.canvas.style.cursor = 'crosshair'; break;
+            case 'fog': this.canvas.style.cursor = 'crosshair'; break;
+            case 'ruler': this.canvas.style.cursor = 'crosshair'; break;
             case 'pan': this.canvas.style.cursor = 'grab'; break;
             default: this.canvas.style.cursor = 'default';
         }
@@ -220,12 +418,7 @@ export class MapController {
                     onClick: () => {
                         const loaded = MapIO.load(name);
                         if (loaded) {
-                            this.grid = loaded;
-                            this.renderer.grid = loaded;
-                            this.tokens.grid = loaded;
-                            this.toolbar.updateGridSize(loaded.rows, loaded.cols);
-                            this.renderer.resizeCanvas();
-                            this.renderer.render();
+                            this._loadGrid(loaded);
                         }
                         document.querySelector('.modal-overlay')?.remove();
                     },
@@ -253,12 +446,7 @@ export class MapController {
             if (input.files.length === 0) return;
             try {
                 const loaded = await MapIO.importJSON(input.files[0]);
-                this.grid = loaded;
-                this.renderer.grid = loaded;
-                this.tokens.grid = loaded;
-                this.toolbar.updateGridSize(loaded.rows, loaded.cols);
-                this.renderer.resizeCanvas();
-                this.renderer.render();
+                this._loadGrid(loaded);
             } catch (err) {
                 console.error('Import failed:', err);
             }
@@ -266,10 +454,23 @@ export class MapController {
         input.click();
     }
 
+    _loadGrid(grid) {
+        this.grid = grid;
+        this.renderer.grid = grid;
+        this.tokens.grid = grid;
+        this.toolbar.updateGridSize(grid.rows, grid.cols);
+        this.history.clear();
+        this.toolbar.updateUndoRedo(false, false);
+        this.renderer.resizeCanvas();
+        this.renderer.render();
+    }
+
     _confirmClear() {
         const msg = el('p', { textContent: 'This will erase the entire map. Are you sure?' });
         showModal('Clear Map', msg, () => {
             this.grid.clear();
+            this.history.clear();
+            this.toolbar.updateUndoRedo(false, false);
             this.renderer.render();
             this._autosave();
         });

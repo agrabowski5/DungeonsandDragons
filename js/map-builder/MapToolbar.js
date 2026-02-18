@@ -14,10 +14,15 @@ export class MapToolbar {
         this.onAction = null;
         this.onZoomChange = null;
         this.onGridToggle = null;
+        this.onFogToggle = null;
+        this.onBrushSizeChange = null;
+        this.onUndo = null;
+        this.onRedo = null;
 
         // State
         this.currentTerrain = DEFAULT_TERRAIN;
         this.currentTool = 'paint';
+        this.brushSize = 1;
 
         this._build();
     }
@@ -26,8 +31,10 @@ export class MapToolbar {
         this.toolbarEl = el('div', { className: 'map-toolbar' });
 
         this._buildToolSelector();
+        this._buildBrushSize();
         this._buildTerrainPalette();
         this._buildTokenConfig();
+        this._buildHistoryButtons();
         this._buildGridControls();
         this._buildZoomControls();
         this._buildActionButtons();
@@ -42,8 +49,12 @@ export class MapToolbar {
 
         const tools = [
             { id: 'paint', label: 'Paint', icon: '\u{1F58C}' },
+            { id: 'rect', label: 'Rect', icon: '\u{25AD}' },
+            { id: 'line', label: 'Line', icon: '\u{2571}' },
             { id: 'token', label: 'Token', icon: '\u{1F3AF}' },
             { id: 'erase', label: 'Erase', icon: '\u{1F6AB}' },
+            { id: 'fog', label: 'Fog', icon: '\u{1F32B}' },
+            { id: 'ruler', label: 'Ruler', icon: '\u{1F4CF}' },
             { id: 'pan', label: 'Pan', icon: '\u{270B}' },
         ];
 
@@ -54,6 +65,30 @@ export class MapToolbar {
                 textContent: `${tool.icon} ${tool.label}`,
                 'data-tool': tool.id,
                 onClick: () => this._selectTool(tool.id),
+            });
+            row.appendChild(btn);
+        }
+        section.appendChild(row);
+        this.toolbarEl.appendChild(section);
+    }
+
+    _buildBrushSize() {
+        const section = el('div', { className: 'toolbar-section toolbar-brush-section' });
+        section.appendChild(el('div', { className: 'toolbar-section__title', textContent: 'Brush' }));
+
+        const row = el('div', { className: 'toolbar-tools' });
+        const sizes = [
+            { size: 1, label: '1x1' },
+            { size: 2, label: '2x2' },
+            { size: 3, label: '3x3' },
+        ];
+
+        for (const s of sizes) {
+            const btn = el('button', {
+                className: `btn btn--sm toolbar-brush-btn ${s.size === this.brushSize ? 'btn--active' : ''}`,
+                textContent: s.label,
+                'data-brush': String(s.size),
+                onClick: () => this._selectBrushSize(s.size),
             });
             row.appendChild(btn);
         }
@@ -123,6 +158,31 @@ export class MapToolbar {
         this.toolbarEl.appendChild(section);
     }
 
+    _buildHistoryButtons() {
+        const section = el('div', { className: 'toolbar-section' });
+        section.appendChild(el('div', { className: 'toolbar-section__title', textContent: 'History' }));
+
+        const row = el('div', { className: 'toolbar-tools' });
+
+        this._undoBtn = el('button', {
+            className: 'btn btn--sm',
+            textContent: '\u{21A9} Undo',
+            disabled: true,
+            onClick: () => { if (this.onUndo) this.onUndo(); },
+        });
+        this._redoBtn = el('button', {
+            className: 'btn btn--sm',
+            textContent: '\u{21AA} Redo',
+            disabled: true,
+            onClick: () => { if (this.onRedo) this.onRedo(); },
+        });
+
+        row.appendChild(this._undoBtn);
+        row.appendChild(this._redoBtn);
+        section.appendChild(row);
+        this.toolbarEl.appendChild(section);
+    }
+
     _buildGridControls() {
         const section = el('div', { className: 'toolbar-section' });
         section.appendChild(el('div', { className: 'toolbar-section__title', textContent: 'Grid Size' }));
@@ -185,6 +245,16 @@ export class MapToolbar {
         });
         row.appendChild(gridBtn);
 
+        this._fogToggleBtn = el('button', {
+            className: 'btn btn--sm btn--active',
+            textContent: 'Fog',
+            onClick: () => {
+                const visible = this.onFogToggle ? this.onFogToggle() : true;
+                this._fogToggleBtn.classList.toggle('btn--active', visible);
+            },
+        });
+        row.appendChild(this._fogToggleBtn);
+
         section.appendChild(row);
         this.toolbarEl.appendChild(section);
     }
@@ -232,12 +302,26 @@ export class MapToolbar {
         if (this.onTerrainSelect) this.onTerrainSelect(key);
     }
 
+    _selectBrushSize(size) {
+        this.brushSize = size;
+        const btns = this.toolbarEl.querySelectorAll('.toolbar-brush-btn');
+        for (const btn of btns) {
+            btn.classList.toggle('btn--active', parseInt(btn.dataset.brush) === size);
+        }
+        if (this.onBrushSizeChange) this.onBrushSizeChange(size);
+    }
+
     _updateToolVisibility() {
         const terrainSection = this.toolbarEl.querySelector('.toolbar-terrain-section');
         const tokenSection = this.toolbarEl.querySelector('.toolbar-token-section');
+        const brushSection = this.toolbarEl.querySelector('.toolbar-brush-section');
 
-        if (terrainSection) terrainSection.style.display = (this.currentTool === 'paint') ? '' : 'none';
+        const showTerrain = ['paint', 'rect', 'line'].includes(this.currentTool);
+        const showBrush = ['paint', 'erase', 'fog'].includes(this.currentTool);
+
+        if (terrainSection) terrainSection.style.display = showTerrain ? '' : 'none';
         if (tokenSection) tokenSection.style.display = (this.currentTool === 'token') ? '' : 'none';
+        if (brushSection) brushSection.style.display = showBrush ? '' : 'none';
     }
 
     getTokenConfig() {
@@ -246,6 +330,11 @@ export class MapToolbar {
             label: this._tokenLabelInput.value || this._tokenTypeSelect.value.charAt(0).toUpperCase(),
             color: this._tokenColorInput.value,
         };
+    }
+
+    updateUndoRedo(canUndo, canRedo) {
+        if (this._undoBtn) this._undoBtn.disabled = !canUndo;
+        if (this._redoBtn) this._redoBtn.disabled = !canRedo;
     }
 
     updateZoomLabel(zoom) {

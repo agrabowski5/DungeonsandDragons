@@ -437,10 +437,10 @@ export class DiceRollerUI {
         // Start button animation
         const shakePromise = this.animator.shakeButton(btnEl);
 
-        let rolls = [];
+        let rolls;
         let keptRoll = null;
         let discardedRoll = null;
-        let baseTotal = 0;
+        let baseTotal;
 
         if (useAdvantage) {
             const roll1 = rollD(20);

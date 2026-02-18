@@ -1,4 +1,5 @@
 import { drawTerrainPattern } from '../data/terrains.js';
+import { getRectCells, getLineCells } from './MapShapes.js';
 
 export class MapRenderer {
     constructor(canvas, mapGrid) {
@@ -10,7 +11,12 @@ export class MapRenderer {
         this.offsetY = 0;
         this.zoom = 1.0;
         this.showGrid = true;
+        this.showFog = true;
         this._rafId = null;
+
+        // Overlays set by controller
+        this.shapePreview = null;  // { start, end, tool }
+        this.rulerOverlay = null;  // { start, end }
 
         this.resizeCanvas();
     }
@@ -54,6 +60,21 @@ export class MapRenderer {
                     this._drawToken(ctx, r, c, cell.token);
                 }
             }
+        }
+
+        // Draw fog of war
+        if (this.showFog) {
+            this._drawFog(ctx);
+        }
+
+        // Draw shape preview overlay
+        if (this.shapePreview) {
+            this._drawShapePreview(ctx);
+        }
+
+        // Draw ruler overlay
+        if (this.rulerOverlay) {
+            this._drawRuler(ctx);
         }
 
         ctx.restore();
@@ -113,11 +134,97 @@ export class MapRenderer {
         }
     }
 
+    _drawFog(ctx) {
+        for (let r = 0; r < this.grid.rows; r++) {
+            for (let c = 0; c < this.grid.cols; c++) {
+                if (this.grid.cells[r][c].fog) {
+                    const x = c * this.cellSize;
+                    const y = r * this.cellSize;
+                    ctx.fillStyle = 'rgba(5, 5, 10, 0.85)';
+                    ctx.fillRect(x, y, this.cellSize, this.cellSize);
+                }
+            }
+        }
+    }
+
+    _drawShapePreview(ctx) {
+        const { start, end, tool } = this.shapePreview;
+        const cells = tool === 'rect'
+            ? getRectCells(start, end)
+            : getLineCells(start, end);
+
+        ctx.fillStyle = 'rgba(212, 160, 23, 0.3)';
+        ctx.strokeStyle = 'rgba(212, 160, 23, 0.6)';
+        ctx.lineWidth = 1;
+
+        for (const { r, c } of cells) {
+            if (r >= 0 && r < this.grid.rows && c >= 0 && c < this.grid.cols) {
+                const x = c * this.cellSize;
+                const y = r * this.cellSize;
+                ctx.fillRect(x, y, this.cellSize, this.cellSize);
+                ctx.strokeRect(x, y, this.cellSize, this.cellSize);
+            }
+        }
+    }
+
+    _drawRuler(ctx) {
+        const { start, end } = this.rulerOverlay;
+        const cs = this.cellSize;
+
+        const x1 = start.col * cs + cs / 2;
+        const y1 = start.row * cs + cs / 2;
+        const x2 = end.col * cs + cs / 2;
+        const y2 = end.row * cs + cs / 2;
+
+        // Dashed gold line
+        ctx.strokeStyle = 'rgba(240, 192, 64, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Start/end markers
+        ctx.fillStyle = 'rgba(240, 192, 64, 0.6)';
+        ctx.beginPath();
+        ctx.arc(x1, y1, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x2, y2, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Distance label at midpoint (Chebyshev distance for 5e diagonal movement)
+        const dRow = Math.abs(end.row - start.row);
+        const dCol = Math.abs(end.col - start.col);
+        const gridDist = Math.max(dRow, dCol);
+        const ftDist = gridDist * 5;
+
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        const label = `${gridDist} sq / ${ftDist} ft`;
+
+        ctx.font = 'bold 11px Cinzel, serif';
+        const textWidth = ctx.measureText(label).width;
+        const pad = 6;
+
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.9)';
+        ctx.fillRect(mx - textWidth / 2 - pad, my - 9, textWidth + pad * 2, 18);
+        ctx.strokeStyle = 'rgba(212, 160, 23, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(mx - textWidth / 2 - pad, my - 9, textWidth + pad * 2, 18);
+
+        ctx.fillStyle = '#f0c040';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, mx, my);
+    }
+
     screenToGrid(screenX, screenY) {
-        const dpr = window.devicePixelRatio || 1;
         const rect = this.canvas.getBoundingClientRect();
-        const px = (screenX - rect.left);
-        const py = (screenY - rect.top);
+        const px = screenX - rect.left;
+        const py = screenY - rect.top;
 
         const x = (px / this.zoom) - this.offsetX;
         const y = (py / this.zoom) - this.offsetY;
@@ -137,6 +244,12 @@ export class MapRenderer {
         this.showGrid = !this.showGrid;
         this.render();
         return this.showGrid;
+    }
+
+    toggleFogVisibility() {
+        this.showFog = !this.showFog;
+        this.render();
+        return this.showFog;
     }
 
     resizeCanvas() {

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    base: '/DungeonsandDragons/',
+    base: process.env.VITE_BASE_PATH || '/',
     root: '.',
     build: {
         outDir: 'dist',

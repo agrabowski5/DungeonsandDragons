@@ -12,7 +12,8 @@ export class MapGrid {
         this.cells = Array.from({ length: this.rows }, () =>
             Array.from({ length: this.cols }, () => ({
                 terrain: DEFAULT_TERRAIN,
-                token: null
+                token: null,
+                fog: false,
             }))
         );
     }
@@ -39,6 +40,11 @@ export class MapGrid {
     removeToken(row, col) {
         if (!this.inBounds(row, col)) return;
         this.cells[row][col].token = null;
+    }
+
+    setFog(row, col, fogged) {
+        if (!this.inBounds(row, col)) return;
+        this.cells[row][col].fog = fogged;
     }
 
     moveToken(fromRow, fromCol, toRow, toCol) {
@@ -82,7 +88,13 @@ export class MapGrid {
 
     static fromJSON(json) {
         const grid = new MapGrid(json.rows, json.cols);
-        grid.cells = json.cells;
+        grid.cells = json.cells.map(row =>
+            row.map(cell => ({
+                terrain: cell.terrain,
+                token: cell.token,
+                fog: cell.fog || false,
+            }))
+        );
         return grid;
     }
 }
